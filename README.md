@@ -11,7 +11,7 @@ Organisational main points:
 
 - Deadline for commitment? 1 week.
 
-- On which platform? Each of us create a single a LaTex file (including also the pdf version) and, in the end we put all together (or periodically). 
+- On which platform? Each of us create a single LaTex file (including also the pdf version) and, in the end we put all together (or periodically). 
 
 - What do we have to write? Writing word by word of the prof. could be useless. So, we should try to make our best in combining our notes, with italian slides or web knowledge. The final result should be a “studyable” book to pass the exam.
 - If, reading others' work, you think that something should be changed for some reason (updating/removing/adding parts) use Telegram group to communicate.
