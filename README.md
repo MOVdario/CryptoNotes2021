@@ -13,8 +13,8 @@ Organisational main points:
 
 - On which platform? Each of us create a single LaTex file (including also the pdf version) and, in the end we put all together (or periodically). 
 
-- What do we have to write? Writing word by word of the prof. could be useless. So, we should try to make our best in combining our notes, with italian slides or web knowledge. The final result should be a “studyable” book to pass the exam. ```diff - **IMPORTANT UPDATE**
-: For each lesson, we need to take notes and explain also parts not explained during lectures and which prof skipped (because he said that are part of the exam as well). We must solve the proposed exercises too (they are likely what we'll find at the exam). 
+- What do we have to write? Writing word by word of the prof. could be useless. So, we should try to make our best in combining our notes, with italian slides or web knowledge. The final result should be a “studyable” book to pass the exam. **IMPORTANT UPDATE**: For each lesson, we need to take notes and explain also parts not explained during lectures and which prof skipped (because he said that are part of the exam as well). We must solve the proposed exercises too (they are likely what we'll find at the exam). 
+
 - If, reading others' work, you think that something should be changed for some reason (updating/removing/adding parts) use Telegram group to communicate.
 
 You can find some examples by looking at the first two lessons, already present in the repository. I'm very new to these platforms and languages, so there could be errors (and also it could be not enough!).
