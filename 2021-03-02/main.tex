@@ -1,0 +1,246 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage{physics}
+\usepackage{calrsfs}
+\usepackage{mathalpha}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{fixltx2e}
+
+\title{2021-03-02 theory}
+\author{}
+\date{March 2021}
+
+\begin{document}
+
+\maketitle
+
+\section{Index}
+
+\subsection{Introduction to Cryptography}
+Ciphering is the original objective of cryptography. 
+Cryptology (made up of Cryptography and Cryptoanalysis) requires studying mathematics, especially modular arithmetic.
+Cryptography is the science of using secret codes. A cryptographer is someone who uses and
+studies secret codes. A cryptanalyst is someone who can
+hack secret codes and read other people’s encrypted messages. Cryptanalysts are also called code
+breakers or hackers.
+
+The art and science of keeping messages secure is cryptography, and it is practiced by
+cryptographers. Cryptanalysts are practitioners of cryptanalysis, the art and science
+of breaking ciphertext; that is, seeing through the disguise. The branch of mathematics
+encompassing both cryptography and cryptanalysis is cryptology and its practitioners
+are cryptologists. Modern cryptologists are generally trained in theoretical mathematics
+they have to be.
+
+Objective of this course is to use python language to solve computer related problems:
+\begin{enumerate}
+    \item Communications between computers separated by space.
+    \item Communications between computers separated by time, e.g., to cipher a hard disk.
+\end{enumerate}
+
+In the mid-1970s, electronic communications begin
+to replace the printed paper in a large number
+of applications, e.g., communications between many people or many
+computers in different parts of the world, etc.
+Therefore, the following problems arise:
+\begin{itemize}
+    \item Confidentiality: information and data should be protected from non-authorized readings.
+    \item Authentication: the identity and the origin of information and data should be verified.
+    \item Integrity: information and data should be protected against non-authorized manipulations.
+    \item Non-repudiation: sender of a message should never have the possibility to deny having sent that message.
+\end{itemize}
+
+\subsection{Basics}
+
+\includegraphics{enc_dec}
+Terminology:
+\begin{itemize}
+    \item P = Plaintext, belonging to the $\mathcal{P}$ space (or message $\mathcal{M}$ space
+    \item k = key, belonging to the $\mathcal{K}$ space (brute force attack consists in trying to check all possible keys)
+    \item Enc = encryption algorithm
+    \item C = Ciphertext, belonging to the $\mathcal{C}$ space
+    \item Dec = decryption algorithm
+    \item pk = public key (used in asymmetric cryptography)
+    \item sk = secret key (used in asymmetric cryptography)
+    \item Gen = generator of keys. When it is used to generate the pair (pk,sk) the computation of sk starting from pk should be \textit{computationally unfeasible} (we will call a task computationally infeasible if its cost as measured by eather the amount of memory used or the runtime is finite but impossible large)
+\end{itemize}
+
+A cryptosystem is composed by the two algorithms Enc and Dec (and eventually by a Gen algorithm, which generates the key). \\ In formulas:
+
+\includegraphics{formulas1.png}
+
+To use crypto all parties must agree on all the elements defining the crypto system, that is, the domain parameters of the scheme. In particular, a protocol is an agreement between 2 or more parties.\\
+
+\textbf{Kerckhoff's principle}\\
+The enemy knows the system (Shannon’s Maxim). This means that security should just
+depend on the secrecy of the key.
+Another possible definition of this principle could be:\\
+If I take a letter, lock it in a safe, hide the safe somewhere in New York, then tell you to read the letter, that’s not security. That’s obscurity. On the other hand, if I take a letter and lock it in a safe, and then give you the safe along with the design specifications of the safe and a hundred identical safes with their combinations so that you and the world’s best safecrackers can study the locking mechanism and you still can’t open the safe and read the letter-that’s security.
+
+\textbf{Brute force attack}\\
+To get a clue of the meaning of \textit{computationally infeasible} imagine you are looking for a key k of m bits:
+\begin{center}
+$k \in \{0,1\}^\textit{m}$
+\end{center}
+
+\includegraphics{bruteforce.png}
+
+\underline{Exercise 1.2.5}: How long it takes for m=64 bits?
+
+\subsection{Three baby examples of symmetric ciphers}
+
+Alice have messages constructed by using plaintexts of 5 bits $P \in 2 {0,1}^5$, e.g. P = [11100] and wants to send them to Bob. Oscar is a eavesdropper. From now on, it will considered sufficient a string of 5 bits for teaching purposes, but keys are obviously longer, e.g. 128 bits, 256 bits, etc.
+In the example, all K, P, C are composed by 5 bits.
+
+\subsubsection{The Vernam cipher or $\oplus$-cipher (Gen, Enc, Dec)}
+The Vernam cipher is, in theory, a perfect cipher. Instead of a single key, each plaintext character is encrypted using its own key. It is also called one-time pad.\\
+To encrypt the message, each character of the plaintext and the key will need to be converted to a numeric code. Fortunately, there are already coding schemes to do this, and we can use standard ASCII codes.\\
+For example, the letter 'H' is 72. This number has a binary representation of 01001000 (using 8 bits).\\ 
+To apply the Vernam cipher, each bit of the binary character code for each letter of the plaintext is XORed with the corresponding bit of each letter of the binary character code for the corresponding character from the key.\\
+In the below example, the message 'HELLO' will be encrypted using the key 'PLUTO':
+\begin{center}
+\textit{Plaintext}\\
+
+H - 01001000  \\
+E - 01010000  \\
+L - 01001100  \\
+L - 01001100  \\
+O - 01001111 \\ 
+
+\textit{Key}\\
+
+P - 01010000  \\
+L - 01001100  \\
+U - 01010101  \\
+T - 01010100  \\
+O - 01001111 \\ 
+
+\textit{Ciphertext}\\
+
+00011000     \\  
+00011100    \\   
+00011001    \\   
+00011000     \\   
+00000000
+\end{center}
+
+Antother example:
+Alice and Bob meet somewhere and agree in using k = [01010] as their secret key.
+
+
+\begin{center}
+\includegraphics[width=160mm,scale=0.7]{vernain_cipher.png}
+\end{center}
+
+
+The one used above is a code dictionary, which connects objects to string of bits. The most famous code dictionary is the ASCII code.
+
+Example: Having a plaintext character P = [11011] and the key chosen by Alice and Bob, the Vernam cipher will return P $\oplus$ k = [11011] $\oplus$ [01010] = [10001].
+
+\underline{Exercise 1.3.2}: ???
+
+\subsubsection{The Caesar cipher or $\boxplus$-cipher (Gen, Enc, Dec)}
+Here instead the $\oplus$ we use the $\boxplus$ operation which means the sum with the carry bit up to 5 bits.\\
+For example:
+\begin{center}
+11011 $\boxplus$ 10101 = 10000
+\end{center}
+The $\boxplus$ operation is easy to see by using base 10 representation and arithmetic modulo $2^5$ = 32:
+
+
+\subsubsection{The rot cipher or circular shift $<<<$ r (Gen, Enc, Dec)}
+In this cipher instead of $\oplus$ or $\boxplus$ we use the operation $<<<$ r.  For example:\\
+\begin{center}
+[110111] $<<<$ 3 = [111110]
+\end{center}
+Namely the bits are shifted toward left in a circular way.\\
+
+\includegraphics{rot_cipher.png}
+
+\underline{Exercise 1.3.3}: The rotation can be made at most of n bits, since the shift operation is circular. So, given a ciphertext, we can easily find out the used key by trying all the possible shifts operations, until we get a readable message. For example, if key length is n = 5 bits, we have to try only 5 different rotations.
+
+\subsection{Basics of Modular Arithmetic}
+Modular Arithmetic deals with the study of the finite modular ring, composed by the remainders of division by $n$:\\
+\begin{center}
+$\mathbb{Z}$ = $\mathbb{Z}$/\textit{n} $\cdot$  $ \mathbb{Z}$  = \{0,1,$\cdots$,(\textit{n}-1)\}
+\end{center}
+
+For example:\\
+\begin{center}
+$\mathbb{Z}$\textsubscript{\textit{2}} = \{0,1\} \\
+$\mathbb{Z}$\textsubscript{\textit{3}} = \{0,1,2\} \\
+\end{center}
+
+To get the remainder \textit{r} $\in$ $\mathbb{Z}$\textsubscript{\textit{n}} of the integer \textit{a} $\in$ $\mathbb{Z}$ modulo \textit{n} in python: r = a\%n.\\
+In mathematics such operation is written as\\
+
+\begin{center}
+\textit{r} = \textit{a} (mod \textit{n})
+\end{center}
+
+whose meaning is that\\
+
+\begin{center}
+$a = n \cdot q + r$
+\end{center}
+
+where \textit{r} belongs to \{0,1,$\cdots$,(\textit{n}-1\} and \textit{q} $\in \mathbb{Z}$.
+
+A ring is a set with 3 operations: +, -, $\times$.\\
+Example:\\
+In $\mathbb{Z}\textsubscript{\textit{6}}$ these operations below are possible:\\
+\begin{center}
+$4 + 4 = 8mod6 = 2$\\
+$2 - 5 = -3mod6 = 3$\\
+$3 \times 4 = 12mod6 = 0$
+\end{center}
+
+\textit{Particular case:}\\
+If $a \times b \equiv 0 (mod p)$, then $a \equiv 0 (mod p)         \textbf{or}  b \equiv 0 (mod p)$.\\ In fact, if we assume that, for example, $a \equiv 0 (mod p)$, we obtain:\\
+\begin{center}
+$b \equiv \frac{a \times b}{a} \equiv \frac{0}{a} \equiv 0 (mod p)$\\
+\end{center}
+
+Note that, if $p$ is a \textbf{prime number} the ring $\mathbb{Z}\textsubscript{\textit{p}}$ is also denoted as $\mathbb{F}\textsubscript{\textit{p}}$ or GF($p$). Actually, means Galois Field. A field is a ring but with 4 operations: +, -, $\times$, /.\\
+
+Moreover, $\mathbb{Z}\textsubscript{\textit{3}} = \{0,1,2\}$ Field can be used to compute the \textit{classical} inverse of a number when performing a division by a number (by a remainder). For example: \\
+\begin{center}
+$2\textsuperscript{-1} = \frac{1}{\textbf{2}} = 2 (mod 3)$
+\end{center}
+because 2 \textbf{$\times$ 2} = 1 (mod 3).\\
+
+$\mathbb{Z}$\textsubscript{\textit{3}} provides \textit{standard} inverse, but it's not valid only for $\mathbb{Z}$\textsubscript{\textit{3}}: every other ring provides its own inverse:\\
+\begin{center}
+$\frac{\spadesuit}{\diamondsuit} = \spadesuit \cdot \frac{1}{\diamondsuit}$
+\end{center}
+
+For example:\\
+In $\mathbb{Z}\textsubscript{\textit{11}}$:
+\begin{center}
+$\frac{1}{9} \equiv 9^-1 \equiv 5 (mod 11)$
+\end{center}
+While in $\mathbb{Z}\textsubscript{\textit{7}}$:
+\begin{center}
+$\frac{3}{5} \equiv 3 \cdot \frac{1}{5} \equiv 3 \cdot 3 \equiv 9 \equiv 2 (mod 7)$
+\end{center}
+
+\underline{Exercise 1.4.2}: Show that $a \equiv b (mod n)$ if and only if $n$ divides $a-b$:\\
+\begin{itemize}
+    \item Step 1:   Assume $a$ $mod$ $n =$ $b$ $mod$ $n$ and prove $n$ divides $a-b$.\\
+    Since $a$ $mod$ $n =$ $b$ $mod$ $n$, we can write $a = q1 n + r$ and $b = q2 n + r$. Then $a-b = (q1-q2)n$ is divisible by $n$.
+    \item Step 2:  Assume $n$ divides $a-b$ and prove $a$ $mod$ $n =$ $b$ $mod$ $n$.\\
+    We know we can write $a = q1 n + r1$ and $b = q2 n + r2$, with remainders $r1$ and $r2$ both between $0$ and $n$. \\
+    Then $a-b = (q1 - q2) n + (r1 - r2)$. Because $n$ goes evenly into $(q1 - q2) n$, the remainder when $a-b$ is divided by $n$ is the same as the remainder when $r1 - r2$ is divided by $n$.\\
+    Since $a-b$ is divisible by $n$, the remainder when $r1 - r2$ is divided by $n$ must be $0$.  So $r1 - r2$ is a multiple of $n$.\\
+    But $r1$ and $r2$ are both numbers between $0$ and $n$, so the only way $r1 - r2$ can be an even multiple of $n$ is for it to be equal to $0 \cdot n = 0$.\\
+    So $r1 = r2$ and $a$ $mod$ $n =$ $b$ $mod$ $n$.
+\end{itemize}
+
+
+
+
+\end{document}
