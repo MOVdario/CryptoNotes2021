@@ -103,14 +103,14 @@ The previous table is created with these rules:
         \item if M is odd, then the value is computed by adding 1 to the \textcolor{myDarkGreen}{result of the last division}
     \end{itemize}
     
-    \item \textcolor{violet}{The second-to-last value of each other column is computed as the sum of the second-to-last values of previous columns}. In the example: $16 = 11 \cdot 5$.
+    \item \textcolor{violet}{The second-to-last value of each other column is computed as the sum of the multiplication of the previous second-to-last element with the element above it ($11 \cdot 1$), plus the last values of previous column ($5$)}. In the example: $16 = 11 \cdot 1 + 5$.
     \item Other numbers are just copied to the next column
     \item The final result is contained in the top-right corner of the table
 \end{enumerate}
 
 In order to verify the final result it is possible to use python:
 \begin{center}
-    $19^-1 \equiv 27 (mod 32)$
+    $19^{-1} \equiv 27 (mod 32)$
 \end{center}
 
 Another example of Kuttaka algorithm: $\frac{3}{5}$  in           $\mathbb{Z}\textsubscript{\textit{7}}$:
