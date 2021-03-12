@@ -1,0 +1,336 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage{physics}
+\usepackage{calrsfs}
+\usepackage{mathalpha}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{fixltx2e}
+\usepackage[dvipsnames]{xcolor}
+
+\definecolor{myDarkGreen}{RGB}{0, 128, 0}
+
+
+\title{2021-03-04 theory}
+\author{}
+\date{March 2021}
+
+\begin{document}
+
+\setcounter{section}{1}
+\setcounter{subsection}{4}
+
+\maketitle
+
+\subsubsection{The operation $\boxtimes$}
+For a given $a, b \in {0,1}^5$ the operation $\boxtimes$ is the multiplication in base 2 disregarding bits of positions > $n$ (in the example below $n = 5$, just for teaching purposes). For example, if a = [01010] and b = [10011] then we can compute a $\boxtimes$ b by hand as:
+
+\begin{center}
+\includegraphics[]{boxtimes.png}
+\end{center}
+
+Actually, if a,b are regarded as integers in base 2, i.e. a = 10,b = 19, then the performed operation is: a $\boxtimes$ b = (a $\cdot$ b)($mod 2^n$). In the current example:
+
+\begin{center}
+    $10 \boxtimes 19 = 30$
+\end{center}
+
+because $10 \cdot 19 = 190 = 30 (mod 32)$ (in python (10*19)\%32 gives 30).
+
+\underline{Exercise 1.4.3}: Show that $a \boxtimes b = (a \cdot b)(mod 2^5)$. See the previous example.\\
+
+\underline{Exercise 1.4.4}: Find $x \in {0,1}^5$ such that $19 \boxtimes x = 1$.\\
+As we can see from the previous exercise, we'll obtain: $19 \boxtimes x = (19 \cdot x)(mod 2^5)$, then: $(19 \cdot x)(mod 2^5) = 1$. So, a naive method of finding a modular inverse for A (mod C) is:
+\begin{itemize}
+    \item step 1. Calculate A * B mod C for B values 0 through C-1
+    \item step 2. The modular inverse of A mod C is the B value that makes A * B mod C = 1
+\end{itemize}
+Note that the term B mod C can only have an integer value 0 through C-1, so testing larger values for B is redundant.
+
+In this exercise we perform these calculations below:\\
+- $19 \cdot 0 = 0$ ($mod$ $32$)\\
+- $19 \cdot 1 = 19$ ($mod$ $32$)\\
+- $19 \cdot 2 = 6$ ($mod$ $32$)\\
+- $19 \cdot 3 = 25$ ($mod$ $32$)\\
+- $19 \cdot 4 = 12$ ($mod$ $32$)\\
+-   $\cdots$ \\
+- $19 \cdot 27 = \textcolor{red}{1}$ ($mod$ $32$) $\longleftarrow$ inverse found!\\
+
+
+\subsubsection{A baby example of asymmetric cipher}
+Bob's pair (\textcolor{red}{sk}, pk): the public key is pk = 19 and the secret key \textcolor{red}{sk} is the x such that $19 \boxtimes x = 1$. Here is how Alice use Bob's public key to encipher $P \in {0,1}^5$:
+
+\begin{center}
+\includegraphics[]{alice_bob_1.4.2.png}
+\end{center}
+
+\underline{Exercise 1.4.5}: 
+\textit{Is it possible to find Bob's secret key \textcolor{red}{sk} in the case above?}\\
+There are two possible solutions to this exercise:
+\begin{itemize}
+    \item By means of a brute force loop on python
+    \item Using the Kuttaka algorithm
+\end{itemize}
+
+\textbf{\underline{The Kuttaka algorithm}}\\
+Hypotesis: the pair (sk, pk) is calculated by: pk $\boxtimes$ sk = 1, so that the sk is the inverse of the pk.\\
+The Kuttaka algorithm allow to find the secret key (sk) with calculations made by hand, starting from a public key (pk), by computing the inverse of numbers.\\
+Example of Kuttaka algorithm implementation:\\
+Bob's pk is [10011] = 19. The used strategy is:
+
+\begin{center}
+    $19 \cdot \equiv 1 (mod 32)  \leftrightarrow 19 \boxtimes x \equiv 1 (mod 32)$
+\end{center}
+
+Then, multiple divisions are needed, starting from $2^n / $pk, \textcolor{blue}{until a remainder with value $0$ is reached}:
+
+\begin{center}
+\includegraphics[]{kuttaka_mine.png}
+\end{center}
+
+The previous table is created with these rules:
+\begin{enumerate}
+    \item The first column has M = X + 1 cells, where X is the number of division performed;
+    \item The first values of the first column are copied from the results of the divisions;
+    \item The last values is always 1;
+    \item The \textcolor{orange}{second-to-last value of the first column} is computed as follows:
+    \begin{itemize}
+        \item if M is even, then the value is computed by subtracting 1 to the \textcolor{myDarkGreen}{result of the last division}
+        \item if M is odd, then the value is computed by adding 1 to the \textcolor{myDarkGreen}{result of the last division}
+    \end{itemize}
+    
+    \item \textcolor{violet}{The second-to-last value of each other column is computed as the sum of the multiplication of the previous second-to-last element with the element above it ($11 \cdot 1$), plus the last values of previous column ($5$)}. In the example: $16 = 11 \cdot 1 + 5$.
+    \item Other numbers are just copied to the next column
+    \item The final result is contained in the top-right corner of the table
+\end{enumerate}
+
+In order to verify the final result it is possible to use python:
+\begin{center}
+    $19^{-1} \equiv 27 (mod 32)$
+\end{center}
+
+Another example of Kuttaka algorithm: $\frac{3}{5}$  in           $\mathbb{Z}\textsubscript{\textit{7}}$:
+
+\begin{center}
+\includegraphics[]{kuttaka2.png}
+\end{center}
+
+
+
+\subsection{A baby Galois $\otimes$-cipher}
+Following Evariste Galois we introduce a new multiplication $\otimes$ between strings $a,b \in {0,1}^5$:
+
+\begin{center}
+    $a \otimes b = c$
+\end{center}
+
+Be careful to \underline{not} confuse $\otimes$ with a XOR ($\oplus$).\\
+
+Let's take a Galois modular function G(x) and two polynomials a(x) and b(x), coming from $a=[a_4 a_3 a_2 a_1 a_0]$ and $b=[b_4 b_3 b_2 b_1 b_0]$, respectively:
+
+\begin{center}
+    $a(x) = a_4 x^4 + a_3 x^3 + a_2 x^2 + a_1 x + a_0$ \\
+    $b(x) = b_4 x^4 + b_3 x^3 + b_2 x^2 + b_1 x + b_0$
+\end{center}
+
+The Galois multiplication consist in compute $(a(x) \times b(x)) mod G(x)$, with a remainder $c(x)$.\\
+As an explicit example let us compute [01010] $\otimes$ [10011]. First of all we compute 
+
+\begin{center}
+\includegraphics[]{galois01.png}
+\end{center}
+
+\begin{center}
+\includegraphics[]{galois02.png}\\
+\end{center}
+
+In the end, the result is: [01111] $(mod G(x))$.
+
+\begin{center}
+\includegraphics[]{galois03.png}
+\end{center}
+
+\underline{Exercise 1.5.2}: Can you find Bob's secret key sk in the previous example?\\
+The secret key sk is the $x$ such that $19 \otimes x = 1$. For a given finite field $GF(2^m)$ and the corresponding irreducible reduction polynomial $G(x)$, the inverse $A^-1$ of a nonzero element $A \in GF(x)$ is defined as:
+\begin{center}
+    $A^-1(x) \cdot A(x) = 1 $ $mod$ $G(x)$
+\end{center}
+In order to find the Galois multiplicative inverse of a value, it is possible to use a multiplicative inverse table. For small fields lookup tables with the precomputed inverses of all fields elements are often used. As an example, we can consider the table below for inverse values in $GF(2^8)$:
+
+\begin{flushleft}
+\includegraphics[width=130mm]{Galois_inverseTable2-5.png}
+\end{flushleft}
+
+For example, from the table, we get that the inverse of
+\begin{center}
+    $x^7 + x^6 + x = [11000010]_2 = C2_{hex}$
+\end{center}
+is given by the element in row $C (12_{10})$, column $2$:
+\begin{center}
+    $2F_{hex} = [00101111]_2 = x^5 + x^3 + x^2 +x +1$.
+\end{center}
+This can be verified by multiplication:
+\begin{center}
+    $(x^7 + x^6 + x) \cdot (x^5 + x^3 + x^2 + x + 1) \equiv 1$ $mod$ $G(x)$.
+\end{center}
+As an alternative to using lookup tables, one can also explicitly compute inverses. The main algorithm for computing multiplicative inverses is the Extended Euclidean algorithm:
+\begin{center}
+    \includegraphics[width=130mm]{EEA.png}
+\end{center}
+
+For example, the exercise we were doing before can be solved as follow:
+\begin{center}
+    \includegraphics[width=130mm]{solutionEx.png}
+\end{center}
+
+\subsection{Symmetric Cryptography}
+\subsubsection{IND Indistinguishability experiment}
+Ciphertext indistinguishability is a property of many encryption schemes. Intuitively, if a cryptosystem possesses the property of indistinguishability, then an adversary will be unable to distinguish pairs of ciphertexts based on the message they encrypt. The property of indistinguishability under chosen plaintext attack is considered a basic requirement for most provably secure public key cryptosystems, though some schemes also provide indistinguishability under chosen ciphertext attack and adaptive chosen ciphertext attack.\\
+IND is a theoretical experiment used to evaluate indistinguishability of a cryptosystem.
+In this experiment there is a cryptoanalyst (adversary) that sends us two different plaintexts. We, acting as a cryptographer, have to randomly choose one of the two using a \textit{coin mechanism} (like heads and tails game) and encrypt it. If the cryptoanalyst will be unable to distinguish our random choice (head or tail), then the cryptosystem described by this specific experiment is considered secure regarding the indistinguishability.\\
+The experiment is repeated several times and a probability of the chance to distinguish the random choice is calculated (probability $p \in [0,1]$).
+
+\begin{center}
+\includegraphics[]{IND.png}
+\end{center}
+
+The symmetric cryptosystem $\Pi$ = (Gen, Enc, Dec) is defined as \textbf{IND-secure} if and only if no adversary $\mathcal{A}$ can distinguish with probability better than 1/2.
+
+\subsection{The key distribution problem}
+The goal is for two users, A and B, to securely exchange a key over an insecure channel. This key is then used by both users in  normal cryptosystem for both enciphering and deciphering.\\
+
+\underline{Key exhange protocol}: is a protocol, i.e. a set of instructions for the parties (Alice and Bob), that starting from
+a security parameter n allows them to compute keys $k_A$ and $k_B$.
+The correctness requirement is that
+\begin{center}
+    $k_A = k_B$
+\end{center}
+so we can speak simply of the key $k = k_A = k_B$ as the exchanged key.
+The security of the exchange protocol is related to the following \textbf{key-exchange experiment}:\\
+\begin{enumerate}
+    \item Two parties holding $1^n$ execute protocol $\prod$. This execution of the protocol results in a transcript \textit{trans} containing all the messages sent by the parties, and a key k that is oupput by each of the parties.
+    \item A random bit b is chosen. If b = 0 then choose k' randomly too, otherwise, if b = 1 set k' = k.
+    \item \textit{trans} and k' are given to the adversary, which generates b'
+    \item Experiment output is 1 if b' = b (success), otherwise it is 0.
+\end{enumerate}
+A protocol $\prod$ is considered \textbf{$\prod$-secure} if no adversary can succeed with probability better than 1/2.
+
+\begin{center}
+\includegraphics[]{active_A.png}
+\end{center}
+
+\subsection{Public Key Cryptography}
+Such cryptosystem consists of three algorithms
+(Gen , Enc , Dec).\\
+Gen generate a pair (sk,pk) of secret key sk and public key pk.\\
+1) The algorithms Gen, Enc e Dec must be computationally feasible,\\
+2) The secret key sk should be computationally infeasible to compute from the public key pk.\\
+Property 2) allows the publication of pk in public web pages.
+The security of the public key cryptosystem is related to the following \textbf{eavesdropping indistinguishability experiment}:
+\begin{enumerate}
+    \item Gen($1^n$) is ran to obtain keys (pk, sk)
+    \item pk is given to the adversary, and it will output a pair of messages $m_0$, $m_1$ of the same length (these messages must be in the plaintext space $\mathcal{P}$ associated with pk)
+    \item A random bit b is chosen. Then a challenge ciphertext c is generated by Enc($m_b$) and it is given to the adversary.
+    \item The adversary generates a bit b'
+    \item Experiment output is 1 if b' = b (success), otherwise it is 0.
+\end{enumerate}
+A protocol $\prod$ is considered \textbf{$\prod$-secure} if no adversary can succeed with probability better than 1/2.\\
+
+\subsubsection{From PKC to PKDS}
+Usually, the pair (pk,sk) is used in order to generate a temporary symmetric key when the two parties need to encipher big plaintexts (PKDS, Public Key Distribution System):
+
+\begin{center}
+\includegraphics[]{PKDS.png}
+\end{center}
+
+\subsection{Attacks!!}
+There are many general types of cryptoanalytic attacks (of course, each of them assumes that the cryptoanalyst has complete knowledge of the encryption algorithm used):
+\begin{enumerate}
+    \item \textbf{Ciphertext-only attack}. In cryptography, a ciphertext-only attack (COA) or known ciphertext attack is an attack model for cryptanalysis where the attacker is assumed to have access only to a set of ciphertexts.
+    The attack is completely successful if the corresponding plaintexts can be deduced (extracted) or, even better, the key. The ability to obtain any amount of information from the underlying ciphertext is considered a success.
+    \item \textbf{Known-plaintext attack}. The known-plaintext attack (KPA) is an attack model for cryptanalysis where the attacker has samples of both the plaintext and its encrypted version (known as ciphertext version) then they can use them to expose further secret information after calculating the secret key.
+    \item \textbf{Chosen-plaintext attack}. A chosen-plaintext attack (CPA) is a model for cryptanalysis which assumes that the attacker can choose random plaintexts to be encrypted and obtain the corresponding ciphertexts. The goal of the attack is to gain some further information which reduces the security of the encryption scheme. In the worst case, a chosen-plaintext attack could expose secret information after calculating the secret key.
+    Modern cryptography is implemented in software or hardware and is used for a diverse range of applications; for many applications, a chosen-plaintext attack is often very feasible. Chosen-plaintext attacks become extremely important in the context of public key cryptography, where the encryption key is public and attackers can encrypt any plaintext they choose.
+    \item \textbf{Adaptive-chosen-plaintext attack}. A (full) adaptive chosen-ciphertext attack is an attack in which ciphertexts may be chosen adaptively before and after a challenge ciphertext is given to the attacker, with ONE condition that the challenge ciphertext may not itself be queried. This is a stronger attack notion than the lunchtime attack, and is commonly referred to as a CCA2 attack, as compared to a CCA1 (lunchtime) attack.[2] Few practical attacks are of this form. Rather, this model is important for its use in proofs of security against chosen-ciphertext attacks. A proof that attacks in this model are impossible implies that any practical chosen-ciphertext attack cannot be performed.
+    \item \textbf{Chosen-ciphertext attack}. A chosen-ciphertext attack (CCA) is an attack model for cryptanalysis in which the cryptanalyst gathers information, at least in part, by choosing a ciphertext and obtaining its decryption under an unknown key.
+    When a cryptosystem is susceptible to chosen-ciphertext attack, implementers must be careful to avoid situations in which an attackers might be able to decrypt chosen ciphertexts (i.e., avoid providing a decryption scheme).
+    \item \textbf{Chosen-key attack}. Chosen-key attacks are a bit different than other kinds of cryptographic attacks. Usually, they are intended to not just break a cipher but to break the larger system which relies on that cipher.
+    The attacker should have some knowledge regarding the relationship between various keys that can be used in the cipher. Usually, he knows exactly what keys have been used or he himself can choose the secret key.
+    An example of a chosen-key attack can be a situation when an intruder tries to compromise a hash function based on a block cipher. If the attacker was able to find two different keys which would produce two block cipher outputs that are somehow related to each other, this would mean that the main property of hash functions (never produce predictable output!) had been broken.
+    \item \textbf{Rubber-hose cryptoanalyst}. In cryptography, rubber-hose cryptanalysis is a euphemism for the extraction of cryptographic secrets (e.g. the password to an encrypted file) from a person by coercion or torture such as beating that person with a rubber hose.
+\end{enumerate}
+
+\subsubsection{Security Level}
+An encryption algorithm has a security level of n bits if the best known attack requires $O(2n)$ steps. This allows us to compare algorithms and is useful when we combine several primitives in a hybrid cryptosystem to understand any weaknesses. The security level is related to a security parameter $\lambda$ which is usually written in unary $1^n$.\\
+\textit{In most cryptographic functions, the key length is an important
+security parameter.}
+
+
+\subsection{CPA-IND experiment}
+Another type of experiment applicable to symmetric cryptosystems is the CPA-IND (Chosen Plaintext Attack INDistinguishability).
+
+This experiment is similar to the previous one and it is made up different steps:
+\begin{enumerate}
+    \item A $n$-bit key k is generated by running Gen function
+    \item The adversary (cryptoanalyst), connected to the server (cryptographer) having access to $Enc_k(\cdot)$, chooses two plaintexts $P_0$ and $P_1$ of the same length
+    \item A random bit $b = {0,1}$ is chosen and then a ciphertext C is computed and sent to the adversary.
+    \item Adversary, who has access to $Enc_k(\cdot)$, generates $b'$
+    \item If $b' = b$ then adversary has succeded to distinguish, otherwise not.
+\end{enumerate}
+
+The symmetric cryptosystem $\Pi$ = (Gen, Enc, Dec) is defined as \textbf{CPA-IND-secure} (or just CPA-secure) if and only if no adversary $\mathcal{A}$ can distinguish with probability better than 1/2.
+
+\underline{Exercise 1.10.3}: The baby ciphers of the previous section are \underline{not} CPA-secure. For example the Caesar cipher allows full recovery of the secret key, while one-time pad cipher is secure only if key reuse is avoided.
+
+\textit{Which are the differences from previous case?}\\
+Inside the server there is an $Enc_k(\cdot)$ program running that encrypt according to the symmetric key k and encryption is \underline{not} deterministic! 
+Before we had that, given a plaintext P, the correspondant ciphertext is always the same. Instead, in this case result could be C now, but then, if we re-use the same encryption function on the same plaintext, it could generate C', C'', etc. different from C. This property is due to the fact that encryption is based also on a random sequence of bits:
+\begin{center}
+    C = $Enc_k(random_{bits} || P_b)$\\
+    C' = $Enc_k(random_{bits}' || P_b)$\\
+    C'' = $Enc_k(random_{bits}'' || P_b)$\\
+    ...and so on...
+\end{center}
+
+Note: A \underline{good} client will knows the length of the random sequence and will throw away the right number of bits in order to keep only the enciphered plaintext. So, for a good client, doesn't matter if it receives C, C', C'' or others.
+
+\subsection{Appendixes}
+\subsubsection{More about security}
+In order for cryptography to actually do anything, it has to be embedded in a protocol, written in a programming language, embedded in software, run on an operating system and computer attached to a network, and used by living people. All of those things add vulnerabilities and-more importantly-they’re more conventionally balanced.\\
+
+\textit{Security is hard}: nothing is really definitively secure.\\
+
+\subsubsection{Security Notions and Goals}
+Security Notions:
+\begin{itemize}
+    \item Perfect Secrecy and One-Time Pad (OTP): In cryptography, the one-time pad (OTP) is an encryption technique that cannot be cracked, but requires the use of a one-time pre-shared key the same size as, or longer than, the message being sent. In this technique, a plaintext is paired with a random secret key (also referred to as a one-time pad). Then, each bit or character of the plaintext is encrypted by combining it with the corresponding bit or character from the pad using modular addition.
+    It has also been proven that any cipher with the property of perfect secrecy must use keys with effectively the same requirements as OTP keys.
+    \item Computational security: A cipher can be said to be computationally secure if it cannot be cracked in 'reasonable time'.
+    \item Provable security: Provable security refers to any type or level of computer security that can be proved. It is used in different ways by different fields.
+    Usually, this refers to mathematical proofs, which are common in cryptography. \\
+\end{itemize}
+
+Security Goals:
+There are two main security goals that correspond to different ideas of what it means to learn something about a cipher's behavior:
+\begin{itemize}
+    \item Indistinguishability (IND): Ciphertext indistinguishability is a property of many encryption schemes. Intuitively, if a cryptosystem possesses the property of indistinguishability, then an adversary will be unable to distinguish pairs of ciphertexts based on the message they encrypt.
+    \item Non-malleability (NM): Given a ciphertext $C_1$ (generated starting from the plaintext $P_1$), it should be impossible to create another ciphertext $C_2$, whose corresponding plaintext $P_2$ is related to $P_1$ in a meaningful way. Surprisingly, the one-time pad is malleable!
+\end{itemize}
+
+\subsubsection{Some pre-computer ciphers}
+Classical ciphers or pre-computers cipher were constructed by using two ideas:
+Substitution and Permutations.\\
+An example of cipher based upon substitution is the monoalphabetic Caesar cipher.\\
+An example of cipher based upon permutation is the Rail Fence cipher. An example of permutation table is given below:
+
+\begin{center}
+\includegraphics[]{permutation.png}
+\end{center}
+
+\underline{Exercise 1.11.7}: A knight's tour is a sequence of moves of a knight on a chessboard such that the knight visits every square exactly once. If the knight ends on a square that is one knight's move from the beginning square (so that it could tour the board again immediately, following the same path), the tour is closed; otherwise, it is open. This mathematical problem can be solved by means of an approach based on an Encryption Algorithm. If we consider an image as a chessboard made up of a lot of cells (pixels) the encryption process is performed in three parts namely Image Padding, Checkerboard Generation and Common-Key XOR-ing (Optional).
+
+\end{document}
