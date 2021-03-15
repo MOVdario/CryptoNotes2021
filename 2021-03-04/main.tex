@@ -42,6 +42,7 @@ Actually, if a,b are regarded as integers in base 2, i.e. a = 10,b = 19, then th
 because $10 \cdot 19 = 190 = 30 (mod 32)$ (in python (10*19)\%32 gives 30).
 
 \underline{Exercise 1.4.3}: Show that $a \boxtimes b = (a \cdot b)(mod 2^5)$. See the previous example.\\
+\input{e1.4.3.tex}
 
 \underline{Exercise 1.4.4}: Find $x \in {0,1}^5$ such that $19 \boxtimes x = 1$.\\
 As we can see from the previous exercise, we'll obtain: $19 \boxtimes x = (19 \cdot x)(mod 2^5)$, then: $(19 \cdot x)(mod 2^5) = 1$. So, a naive method of finding a modular inverse for A (mod C) is:

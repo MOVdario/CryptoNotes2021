@@ -1,0 +1,79 @@
+\subsubsection*{Exercise 1.4.3}
+
+  Let $a, b \in \{0, 1\}^{5}$.
+  Show that $a \boxtimes b$ = $(a \cdot b) (mod\ 2^{5})$.
+
+  \vspace{20pt}
+
+  Let's start with an \emph{observation} (1): dividing a number by $2^{n}$ is
+  the same as shifting the binary number to the right by $n$
+  positions, while multiplying a number by $2^{n}$ is the same as
+  shifting the binary number to the left by $n$ positions.
+  For example, if $x = 11 = [1011]$, then:
+  $$
+	\frac{x}{2^{2}} = \frac{11}{4} = [1011] \gg 2 = [0010] = 2
+  $$
+  And also:
+  $$
+	x \cdot 2^{2} = 11\cdot 4 = [1011] \ll 2 = [101100] = 
+	44
+  $$
+
+  Now let's write the product $a \cdot b$ in its generic binary form. 
+  It's easy to see that this number takes at most 9 bits.
+  $$
+	a \cdot b = 
+	[b_{8}\ b_{7}\ b_{6}\ b_{5}\ b_{4}\ b_{3}\ b_{2}\ b_{1}\ b_{0}]
+  $$
+
+  Where $b_{8} \dots b_{0}$ are the bits of the binary string. 
+  When we perform the operation $a \boxtimes b$ we simply cut the
+  bits from $b_{5}$ to $b_{8}$:
+  $$
+	a \boxtimes b = [b_{4}\ b_{3}\ b_{2}\ b_{1}\ b_{0}]
+  $$
+
+  On the other hand, when we write $(a \cdot b) (mod \ 2^{5})$ we are
+  taking the remainder of the division between $(a \cdot b)$ and
+  $2^{5}$. Then we can write:
+  $$
+	(a \cdot b) (mod \ 2^{5}) = (a \cdot b) - q\cdot 2^{5}
+  $$
+
+  Where $q$ is the quotient of the integer division between $(a \cdot
+  b)$ and $2^{5}$. 
+  Since (1) we can write $q$ as:
+  $$
+	q = \frac{a \cdot b}{2^{5}} = (a \cdot b) \gg 5 ~ = ~
+	[b_{8}\ b_{7}\ b_{6}\ b_{5}\ b_{4}\ b_{3}\ b_{2}\ b_{1}\
+	b_{0}] \gg 5 ~ = ~ 
+  $$
+  $$
+	= [0\ 0\ 0\ 0\ b_{8}\ b_{7}\ b_{6}\ b_{5}\ b_{4}]
+  $$
+
+  Moreover, still since (1), we can write $q \cdot 2^{5}$ as:
+  $$
+	[0\ 0\ 0\ 0\ b_{8}\ b_{7}\ b_{6}\ b_{5}\ b_{4}] \ll 5 = 
+	[b_{8}\ b_{7}\ b_{6}\ b_{5}\ b_{4}\ 0\ 0\ 0\ 0\ 0]
+  $$
+
+  Then:
+  $$
+	(a \cdot b)\ (mod 2^{5}) = (a \cdot b) - 2^{5} =
+  $$
+  $$
+	[b_{8}\ b_{7}\ b_{6}\ b_{5}\ b_{4}\ b_{3}\ b_{2}\ b_{1}\ b_{0}] 
+	~ - ~ [b_{8}\ b_{7}\ b_{6}\ b_{5}\ b_{4}\ 0\ 0\ 0\ 0\ 0] =
+  $$
+  $$
+	= [b_{4}\ b_{3}\ b_{2}\ b_{1}\ b_{0}]
+  $$
+
+  But this is exactly $a \boxtimes b$.
+
+  \begin{flushright}
+	q.e.d.
+  \end{flushright}
+  
+  
