@@ -1,0 +1,86 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+
+
+
+\title{Lesson 2021-03-11}
+
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+\subsection{Problems in LFSR or Lehmer PRNG}
+LFSR or Lehmer PRNG are not cryptographic PRNGS. The problem is the linear property, because if you intercept the $s_i$ you can solve an easy system.
+\begin{equation}
+    \begin{cases}
+    s_1=as_0+b mod(m)\\
+    s_2=as_1+b mod(m)\\
+    s_3=as_2+b mod(m)\\
+    \end{cases}
+\end{equation}
+
+\subsection{KPA ATTACK}
+The attack is the (kpa) known plaintext attack. We assume that the enemy knows in somehow:
+\begin{equation}
+  \begin{cases}
+ ...x_{m+j}...x_j...\\
+ ...y_{m+j}...y_j...\\  \end{cases}\Leftrightarrow
+ \begin{cases}
+ ...s_{m+j}...s_j...\\
+ ...y_{m+j}...y_j...\\  \end{cases}
+\end{equation}
+
+So in a LFSR with m bits and a key [$p_{m-1}$....$p_0$]
+we have :
+\begin{equation}
+    s_m=s_{m-1}p_{m-1}+s_{m-2}p_{m-2}+....+s_1p_1+s_0p_0
+\end{equation}
+and an enemy needs only 2m bits of key stream to solve the system.
+
+
+\subsubsection{Example}
+In case of LFSR of m bits in general if you intercept a segment of 2m bits then you obtain m equations with m unkown $p_m....p_0$ and ypu can solve the system with $O(m^2)$
+
+\includegraphics[]{crypto/1.png}
+\includegraphics[scale=0.8]{crypto/2.png}
+\subsection{Stream Ciphers: Permutation} 
+
+ \includegraphics[scale=0.7]{crypto/due.png}
+A random oracle is random but preserves the responses. So it has memory:
+\begin{equation*}
+    R:\{0,1\}^* \xrightarrow[]{}\{0,1\}^\infty 
+\end{equation*}
+   $R(x)=[b_1........]$\\
+    $R(y)=[c_1........]$\\
+    .\\
+    .\\
+    $R(x)=[b_1........]$\\
+    
+ \subsection{Keccak-Sponge key stream}
+ 
+ \includegraphics[scale=0.7]{uno.png}
+A sponge function is built from three components:
+\begin{itemize}
+\item State, containing bits,
+\item a function that transforms the state memory (often it is a pseudorandom permutation of the ${\displaystyle 2^{|bits|}}$ state values)
+\item a padding function Pad.
+\end{itemize}
+The State memory is divided into two sections: Bitrate(r) and the remaining part the Capacity(c).
+
+There are two phases one of absorption in which the system uses the key and the iv to modify the current state. then there is the squeeze phase in which the system generates the key stream.
+
+\subsection{The Keccak-f permutations}
+There are 7 Keccak-f permutations of $\{0, 1\}^b$, indicated Keccak-f[b] , where b = 25 × $2^l$ and l ranges from 0 to 6.
+The elements of $\{0, 1\}^b$ are regarded as a 3-dimensional array
+
+
+ \includegraphics[scale=0.7]{crypto/tre.png}
+ To compute Keccak-f[b](x) there are 12 + 2l rounds, e.g. Keccak-f[25] has 12 rounds, Keccak- f[1600] has 24 rounds.
+ A round consists of 5 invertible steps mappings:
+ 
+ \includegraphics[scale=0.7]{crypto/qua.png}
+\end{document}
