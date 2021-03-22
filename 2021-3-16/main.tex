@@ -1,0 +1,109 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage{physics}
+\usepackage{calrsfs}
+\usepackage{mathalpha}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{fixltx2e}
+\usepackage[dvipsnames]{xcolor}
+
+\definecolor{myDarkGreen}{RGB}{0, 128, 0}
+
+
+\title{2021-03-16 theory}
+\author{}
+\date{March 2021}
+
+\begin{document}
+
+
+\maketitle
+\section*{Summary}
+Summary of operations introduced on first week. The operators were introduced using baby examples of symmetric cipher, in which we used strings of \textit{5 bits}, i.e. $element \in [0,1]^5$:
+\begin{itemize}
+\item  $\otimes$ Xor \(\longleftrightarrow\) The Vernam cipher
+\item  $\boxplus$ Addition \(\longleftrightarrow\) The Caesar cipher
+\item $<<<$ Rotation \(\longleftrightarrow\) The rot cipher 
+\item $\boxtimes$ Multiplication
+\item  $\otimes$ Tensor product \(\longleftrightarrow\) Galois cipher  
+\end{itemize}
+This operation can be generalized to \textit{n bits}, i.e. $element \in [0,1]^n$:
+\begin{itemize}
+\item  $\otimes$ Xor  \(\surd\) (it's a bitwise operation)
+\item   ⊞  Addition \(\Rightarrow\) mod($2^{n}$): after the sum operation, we only consider the the \textit{n LSB} of the  binary representation. (When we take the first \textit{n bits}, it's equivalent to take the reminder of mod($2^{n}$))
+\item $<<<$ Rotation \(\surd\)
+\item $\boxtimes$ Multiplication \(\Rightarrow\) mod($2^{n}$): same as for the addition, after the multiplication we have to take only the first \textit{n bits}
+\item $\otimes$ Tensor product(Galois) \(\Rightarrow\) we need additional information about the G(x) polynomial function. 
+\end{itemize}
+
+\newpage
+\section{ARX cipher}
+ARX which stands for Addition/Rotation/XOR, is a class of symmetric-key algorithms designed using only the following simple operations: modular addition, bitwise rotation and exclusive-OR. In academia and industry alike, ARX has gained an enormous amount of interest because of its small size and simple operations.
+ARX ciphers are block ciphers with very interesting advantages such as:
+\begin{itemize}
+\item \textbf{fast performance} on PCs;
+\item compact implementation;
+\item easy algorithms;
+\item no timing attacks: in many other ciphers, analyzing the time taken to execute cryptographic algorithms gives useful informations to the attacker in order to work backwards to the input, since the time of execution can differ based on the input;
+\item functionally completeness (assuming constants included): every possible logic gate can be realized as a network of gates using ARX operations and constants;
+\item it's a trade of speed and mathematical security.
+\end{itemize}
+\subsection{RC4}
+In cryptography, RC4 is a stream cipher designed by Ron Rivest (the “R” of RSA) in 1987.  While it is remarkable for its simplicity and speed in software, multiple vulnerabilities have been discovered in RC4, rendering it insecure. RC4 became part of some commonly used encryption protocols and standards, such as WEP in 1997 and WPA in 2003/2004 for wireless cards; and SSL in 1995 and its successor TLS in 1999, until it was prohibited for all versions of TLS by RFC 7465 in 2015, due to the RC4 attacks weakening or breaking RC4 used in SSL/TLS. The main factors in RC4's success over such a wide range of applications have been its speed and simplicity:boxtimes efficient implementations in both software and hardware were very easy to develop.
+\begin{figure}[htb]
+	\begin{center}
+  		\includegraphics[width=0.75 \textwidth,]{RC4.svg.png} 
+ 	\end{center}
+ 	\caption{The lookup stage of RC4. The output byte is selected by looking up the values of S[i] and S[j], adding them together modulo 256, and then using the sum as an index into S; S(S[i] + S[j]) is used as a byte of the key stream, K.}
+\end{figure}
+\newpage
+\subsubsection{Behaviour}
+RC4 is a function that, starting with a key (1 to 256 octets long), generates a sequence pseudorandom (keystream) used to encrypt and decrypt (by XOR) a data stream.
+\begin{figure}[htb]
+	\begin{center}
+  		\includegraphics[width=0.50 \textwidth,]{behaviour.png} 
+ 	\end{center}
+\end{figure}
+The key (1 to 256 octets long) comes used only in the initialization phase of the state. Vector register contains one at all times permutation of values from 0 to 255. The register vector is used for subsequent generation of pseudo-random bytes and then to generate a pseudo-random stream which is XORed with the plaintext to give the ciphertext. Each element in the register vector is swapped at least once. The algorithm works in two phases, key setup(Figure \ref{init}) and ciphering( Figure \ref{ciphering}). Key setup is the first and most difficult phase of this encryption algorithm. During a N-bit key setup (N being your key length), the encryption key is used to generate an encrypting variable using two arrays, register and key, and N-number of mixing operations. These mixing operations consist of swapping bytes, modulo operations, and other formulas. Once the encrypting variable is produced from the key setup, it enters the ciphering phase, where it is XORed with the plain text message to create an encrypted message. XOR is the logical operation of comparing two binary bits. If the bits are different, the result is 1. If the bits are the same, the result is 0. Once the receiver gets the encrypted message, he decrypts it by XORing the encrypted message with the same encrypting variable. 
+\begin{figure}[htb]
+	\begin{center}
+  		\includegraphics[width=0.58 \textwidth,]{init.png}
+ 	\end{center}
+ 	\caption{\textbf{Initialization}: In register enter the values from 0 to 255: register[n] = n; Inside key there is a vector (of 256 octets) with the key value(repeating it if the key is  shorter); You go through register by exchanging the current element-ith with another determined one using the key.}
+ 	\label{init}
+\end{figure}
+
+
+\newpage
+\begin{figure}[htb]
+	\begin{center}
+  		\includegraphics[width=0.65 \textwidth,]{generation.png}
+ 	\end{center}
+ 	\caption{\textbf{Generation of the keystream}: The vector register is followed, exchanging the element current (i-th) with another determined by current state of register and j.}
+ 	\label{ciphering}
+\end{figure}
+\textbf{RC4 Algorithm Strengths: }
+\begin{itemize}
+\item The difficulty of knowing where any value is in the table
+\item The difficulty of knowing which location in the table is used to select each value in the sequence
+\item A particular RC4 Algorithm key can be used only once
+\item Encryption is about 10 times faster than DES (Data Encryption Standard)
+\end{itemize}
+\textbf{RC4 Algorithm Weakness: }
+\begin{itemize}
+\item The algorithm is vulnerable to analytic attacks of the register vector
+\item One in every 256 keys can be a weak key. These keys are identified by cryptanalysis that is able to find circumstances under which one of more generated bytes are strongly correlated with a few bytes of the key. 
+\item WEAK KEYS: these are keys identified by cryptanalysis that is able to find circumstances under which one or more generated bytes are strongly correlated with small subset of the key bytes. These keys can happen in one out of 256 keys generated
+\end{itemize}
+
+%Considering the (register, i, j), RC4 can be found up to 256! × 2562 (approximately 21700 or 5.62 × 10511) states.
+
+
+\end{document}
+
+
