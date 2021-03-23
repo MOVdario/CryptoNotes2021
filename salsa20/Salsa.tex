@@ -1,0 +1,165 @@
+%% It is just an empty TeX file.
+
+
+
+\documentclass{article}
+
+\usepackage{graphicx}
+
+\usepackage{pdfpages}
+
+\title{Salsa20} 
+
+
+\begin{document}             % End of preamble and beginning of text.
+
+\maketitle                   % Produces the title.
+
+
+
+\section{How it is formed}
+
+ 
+
+%%\includegraphics[scale=.1]{dark-wallpaper-36.jpg}
+
+
+Salsa20 is a counter-based stream cipher—it generates its keystream by
+repeatedly processing a counter incremented for each block. As you can
+see in Figure 5-10, the Salsa20 core algorithm transforms a 512-bit block
+using a key (K), a nonce (N), and a counter value (Ctr). Salsa20 then adds
+the result to the original value of the block to produce a keystream block.
+(If the algorithm were to return the core’s permutation directly as an
+output, Salsa20 would be totally insecure, because it could be inverted.
+The final addition of the initial secret state K , N , Ctr makes the
+transform key-to-keystream-block non-invertible.)
+
+
+
+
+\includegraphics[scale=1]{img2.png}
+
+(sorry for the foreign language; coudn't find a picture in english but that 
+sentence means SALSA20 CORE): REFERENCE IN THE BOOK: SERIOUS CRYPTOGRAPHY(CHAPTER 5) 
+
+
+%%somethinghere
+
+\includegraphics[scale=.5]{Mytitle2_page-0001.jpg}
+
+
+
+\subsection{observation from the page taken from notes}
+
+
+This is a matrix of 4x4 word(4 bytes each);
+meaning that each block give a keystream of 64 bytes(4*4*4).
+That is why we have to take (b/64) to get the total number of blocks needed to
+make a valid key stream for a plaintext of b bits.
+
+
+
+
+\section{The quarter-round function}
+
+
+Salsa20’s core permutation uses a function called quarter-round (QR) to
+transform four 32-bit words (a, b, c, and d), as shown here:
+
+
+   b=b xor [(a+d) \(<<<\) 7]
+   
+   
+   c=c xor [(b+a) \(<<<\) 9]
+   
+   
+   d=d xor [(c+b) \(<<<\) 13]
+   
+   
+   a=a xor [(d+c) \(<<<\) 18]
+
+These four lines are computed from top to bottom, meaning that the
+new value of b depends on a and d, the new value of c depends on a and on
+the new value of b (and thus d as well), and so on.
+The operation \(<<<\) is wordwise left-rotation by the specified number of
+bits, which can be any value between 1 and 31 (for 32-bit words).
+
+
+
+\includegraphics[scale=.5]{My3title.jpg}
+
+\subsection{Observation from the teacher and students}
+
+
+1)In case of the syncronized mode,how is the IV initialized
+
+
+Answer:It depends; u can make it public if u wanted; it depends on what you choose or u can even choose some random thing and share it.
+
+
+2)Key whiting: it is the addition done at the end of the quarter-round
+function and the key; since if we don't do it; it would be reversible 
+hence insecure.
+
+
+3)the meaning of (a,b,c,d) in the matrix:
+Prof's answer: It means that when we pass those 4 numbers in the qr function; they are going to be updated according to the schema above. 
+
+
+4)with a certain number of registers each with a part of the stream with bytes in it; in what order do we xor with the plain text?
+Prof answer: In the bernstein paper, they had in mind the little endian notation in the lower level but on higher level like in python, it depends on how u implemented the bytes(for example in python u use lists)
+
+5)where does the rotation number coming from(7,9,13,18):
+Answer: They are some ratio in the berstein paper to some explanation they used those numbers
+
+6)Salsa works on plaintext of variable size because only the number of registers change
+
+7)what do we do at decryption side?:
+answer: You just do the same; no need of the reverse since it is just a
+xor with the cyphertext.
+
+\subsection{Salsa20 implementation example in python}
+
+from salsa20 import Xsalsa20\(_\)xor
+
+
+from os import urandom
+
+
+IV = urandom(24)
+
+
+KEY = b'*secret**secret**secret**secret*'
+
+
+ciphertext = XSalsa20\(_\)xor(b"IT'S A YELLOW SUBMARINE", IV, KEY)
+
+
+print(ciphertext)
+
+
+print(XSalsa20\(_\)xor(ciphertext, IV, KEY).decode())
+ 
+%% \includepdf{}
+
+
+\section{CHACHA20}
+
+The only difference between chacha20 is the quarter-round.
+
+\includegraphics[scale=.5]{Mytitle9.jpg}
+
+\subsubsection{what is added}
+
+confusion: (Shanon theory) It is related with permutation; (This refers to change the position of values in the register)
+
+difusion: register and matrix; the register multiplied with matrix; (this is a way of calculating the media since the matrix perse is populated with 1s and 0s)
+
+
+
+
+
+
+
+\end{document}   
+%% Write your code here.
