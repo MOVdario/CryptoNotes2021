@@ -1,0 +1,264 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage{physics}
+\usepackage{calrsfs}
+\usepackage{mathalpha}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{fixltx2e}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{hyperref}
+
+\definecolor{myDarkGreen}{RGB}{0, 128, 0}
+
+
+\title{AES}
+\author{}
+\date{25 March 2021}
+
+\begin{document}
+
+
+\maketitle
+\section*{Introduction}
+AES (aka Rijndael from its invetor's name) is a block ciphers  with blocks of 128 (27) bits. It is important that blocks are not too large in order to minimize both the length of ciphertext and the memory footprint.
+As for the memory footprint, in order to process a 128-bit block, you need at least 128 bits of memory. This is small enough to fit in the registers of most CPUs or to be implemented using dedicated hardware circuits. Blocks of 64, 128, or even 512 bits are short enough to allow for efficient implementations in most cases.
+When ciphertexts’ length or memory footprint is critical, you may have to use 64-bit blocks, because these will produce shorter ciphertexts and consume less memory. If it is possible , 128-bit or larger blocks are better. If you need to encrypt a 16-bit message when blocks are 128 bits, you’ll first need to convert the message into a 128-bit block by means of padding. Blocks shouldn’t be too small otherwise, they may be susceptible to codebook attacks. The codebook attack works like this with 16-bit blocks:
+1. Get the 65536 (216) ciphertexts corresponding to each 16-bit
+plaintext block.
+2. Build a lookup table—the codebook—mapping each ciphertext block
+to its corresponding plaintext block.
+3. To decrypt an unknown ciphertext block, look up its corresponding
+plaintext block in the table.
+\section*{Rounds}
+Computing a block cipher boils down to computing a sequence of rounds.
+In a block cipher, a round is a basic transformation that is simple to specify and to implement, and which is iterated several times. Each round should also have an inverse in order to make it possible for a recipient to compute back to plaintext. The round functions—R1, R2, and so on—are usually identical algorithms, but they are parameterized by a value called the round key.
+In a block cipher, no round should be identical to another round in order to avoid a slide attack. When rounds are identical, the relation between the two plaintexts, P2 = R(P1), implies the relation C2 = R(C1). Knowing the input and output of a single round often helps recover the key.
+\begin{figure}[htb]
+	\begin{center}
+  		\includegraphics[width=0.75 \textwidth,]{rounds.png} 
+ 	\end{center}
+\end{figure}
+
+\newpage
+\section{Confusion and DIffusion}
+Confusion means that the input (plaintext and encryption key) undergoes complex transformations so that it is hard to recover the key having ciphertext (at a high level, confusion is about depth whereas diffusion is about breadth). 
+Diffusion means that these transformations depend equally on all bits of the input (ability of distribute the statistical correlation among the entire alphabet used by the algorithm, making harder a statistical attack which means that some letters are more used than other and the same for the combination of letter) . 
+In the design of a block cipher, confusion and diffusion take the form of substitution and permutation operations, which are combined within substitution–permutation networks (SPNs).
+Substitution often appears in the form of S-boxes, or substitution boxes, which are small lookup tables that transform chunks of 4 or 8 bits (S-boxes should be as nonlinear as possible).
+The permutation can be as simple as changing the order of the bits, which is easy to implement but does not mix up the bits very much. Some ciphers use basic linear algebra and matrix multiplications to mix up the bits: they perform a series of multiplication operations with fixed values (the matrix’s coefficients) and then add the results.
+\section{AES}
+AES processes blocks of 128 bits using a secret key of 128, 192, or 256 bits (the number of transformation rounds that convert the plaintext into the ciphertext depends on the length of the key). The 128-bit key being the most common because it makes encryption slightly faster and because the difference between 128- and 256-bit security is meaningless for most applications. AES is a symmetric-key algorithm, meaning the same key is used for both encrypting and decrypting the data.
+
+The totality of the operations are made on a bidimensional array, called state, that consist of 4 rows of byte, each of Nb byte, where Nb is the block size divided for 32. In the State array, denominated with the symbol “S”, each byte is indicated by 2 indexes: the row index varies in the range 0<=r<4, while the column index avrues in the range 0<=c<Nb (with block size equal 128 bits, Nb takes value of 4).
+\begin{figure}[htb]
+	\begin{center}
+  		\includegraphics[width=0.75 \textwidth,]{AESintro.png} 
+ 	\end{center}
+\end{figure}
+
+\subsection{Galois Field}
+All the bytes of the algorithm are interpreted as elements of Galois finite field.
+A byte b is composed by the bit b7 b6 b5 b4 b3 b2 b1 b0 and is considered as a polynomial with coefficient in {0,1}:
+\[ b_7\,x^7 +  b_6\,x^6 +  b_5\,x^5+ b_4\,x^4+ b_3\,x^3+ b_2\,x^2+ b_1\,x + b_0\]
+e.g the byte with binary value 01010111 corresponds to $x6+ x4+ x2+ x + 1.$
+The elements of a finite field can be added and multiplied. 
+
+Addition example:
+\[(x^6+ x^4 + x^2+ x + 1) + (x^7+ x + 1) = x^7+ x^6+ x^4+ x^2.\]
+In binary notation: $"01010111" + "10000011" = "11010100"$.
+Modulo 2 addition corresponds to a XOR.
+
+In the polynomial representation, multiplication in GF($2^8$) (with GF($2^8$) we are relating to the finite field composed by 256 elements), corresponds to the multiplication of the polynomials modulo of an irreducible binary polynomial of grade 8. A polynomial is irreducible if it has no other dividers different from 1 and itself. 
+For Rijndael (AES) it is :
+\[m (x) = x^8+ x^4 + x^3 + x + 1.\]
+e.g:
+\[(x^6+ x^4+ x^2+ x + 1) (x^7+ x + 1)=\]
+\[x^{13}+ x^{11}+ x^9+ x^8+ x^7+x^7+ x^5+ x^3+ x^2+ x +x^6+ x^4+ x^2+ x + 1=\] 
+\[x^{13}+ x^{11}+ x^9+ x^8+ x^6+ x^5+ x^4+ x^3+ 1  modulo(x^8+ x^4+ x^3+ x + 1)=\]
+\[ x^7+ x^6+ 1\]
+The set of the 256 possible values obtainable with a byte, joined with the XOR operation used as addition and with multiplication give birth to the finite field GF($2^8$).
+\subsection{Polynomials with coefficient in GF($2^8$)}
+\label{sec:polyGF}
+Polynomials of 4 terms can be represented as coefficients that belong to a finite field:
+\[a(x) = a_3\,x^3 + a_2\,x^2+ a_1\,x + a_0 \rightarrow word: [a_0, a_1, a_2, a_3]\]
+This polynomials work in a different way because coefficients themselves are elements of a finite field and differently from before this time they are byte while in the previous definition they were bits. In this way an array of  4 bytes is related to a polynomial of grade less than 4 with coefficient in the GF($2^8$).
+\subsubsection{Addition}
+\[a(x) + b(x) = (a_3\oplus b_3 )*x^3 + (a_2\oplus b_2 )*x^2 + (a_1\oplus b_1 )*x + (a_0\oplus b_0 )\]
+\subsubsection{Multiplication}
+\[a(x) = a_3\, x^3+a_2\, x^2+a_1\, x + a_0\]
+\[b(x) = b_3\, x^3+ b_2 x^2+ b_1 x + b_0.\]
+Their product $c (x) = a (x) b (x)$ is obtained as:
+\[c (x) = c_6 x^6+c_5 x^5 + c_4x^4+ c_3 x^3+ c_2 x^2+c_1 x + c_0\]
+Clearly, c(x) will be represented as a 4 byte array by means of a modulo 4 polynomial. In Rijndael is used $m(x ) = x^4+ 1$, so that the modular product of a(x) and b(x) is $d (x) = a (x) b (x)$:
+\[d (x) = d3 x3+ d2x2+ d1 x + d0\; with\] 
+\[d0= a_0* b_0\oplus   a_3* b_1\oplus  a_2* b_2\oplus   a_1* b_3\]
+\[d1= a_1* b_0\oplus   a_0* b_1\oplus  a_3* b_2\oplus   a_2* b_3\]
+\[d2= a_2* b_0\oplus   a_1* b_1\oplus  a_0* b_2\oplus   a_3* b_3\]
+\[d3= a_3* b_0\oplus   a_2* b_1\oplus  a_1* b_2\oplus   a_0* b_3\]
+
+Can also be written as matricial multiplication where the matrix is a circular matrix: 
+\begin{figure}[htb]
+	\begin{center}
+  		\includegraphics[width=0.50 \textwidth,]{circularMatrix.png} 
+ 	\end{center}
+\end{figure}
+
+Since $x^4+ 1$ is not an irreducible polynomail in GF(28), the multiplication with a fixed polynomial of 4 terms is not necessarily invertible. For this reason Rijndael specifies a fixed polynomial that has an inverse: 
+  \[ a(x) = {03}*x^3 + {01}*x^2+ {01}*x + {02} \quad a^{-1}(x) = {0b}*x^3 + {0d}*x^2+ {09}*x + {0e}\]
+That will be used in the encription and decription in the MixColumns phase.
+
+
+\subsection{Encryption}
+At the beginning of the encryption, the memorised input is copied in the State array. After an initial XOR of the Round Key, the State is transformed through a Round Transformation of 10 rounds for 128-bit keys, 12 for 192-bit keys, and 14 for 256-bit keys. Moreover, the last round differs from the previous Nr-1. When the last round has been performed, the State is saved in the output array.
+The transformation used are SubBytes (), ShiftRows (), MixColumns () e AddRoundKey ().
+\begin{figure}[htb]
+	\begin{center}
+  		\includegraphics[width=0.65 \textwidth,]{encryption.png} 
+ 	\end{center}
+\end{figure}
+\subsubsection{SubBytes ()}
+Replaces each byte ($s_0,\: s_1,\: .\: .\: .\: ,\: s_15$) with another byte according to an S-box. In this example, the S-box is a lookup table of 256 elements.
+The S-box used is derived from the multiplicative inverse over GF(28), known to have good non-linearity properties:
+\begin{enumerate}
+    \item At first, is taken the multiplicative inverse in GF($2^8$)
+    \item Then, is applied an GF($2^8$) affine transformation defined by:
+\end{enumerate}
+ \[b^{'}_i  =  b_i\oplus b_{(i+4)mod 8}\oplus  b_{(i+5) mod 8 }\oplus b_{(i+6) mod 8} \oplus b_{(i+7) mod 8} \oplus  c_i\]
+
+in this way the S-Box element resulted from the affine transformation can be expressed as:
+\begin{figure}[htb]
+	\begin{center}
+  		\includegraphics[width=0.50 \textwidth,]{affineTransformation.png} 
+ 	\end{center}
+\end{figure}
+To simplify the S-box used can be expressed in an hexadecimal form:
+ \begin{figure}[htb]
+	\begin{center}
+  		\includegraphics[width=1 \textwidth,]{sboxHexEnc.png} 
+ 	\end{center}
+\end{figure}
+\label{sec:sboxEnc}
+For example, if $s_{1,1}= \{ 5\; 3 \}$ , then the value of the substitution will be determined by the intersection of the row of index '5' with the column of index '3'. The result of this substitution will be therefore $s_{1,1}^{’}={e\,d}$.
+
+\subsubsection{ ShiftRows ()}
+The first row is left unchanged. Each byte of the second row is shifted one to the left. Similarly, the third and fourth rows are shifted by offsets of two and three respectively.
+\begin{figure}[htb]
+	\begin{center}
+  		\includegraphics[width=0.75 \textwidth,]{shiftRows.png} 
+ 	\end{center}
+\end{figure}
+\subsubsection{MixColumns ()}
+This transformation works on the column of the State array. The columns are treated as polynomials of 4 terms with coefficient in the GF($2^8$) finite order and are modulo $x^4+1$ multiplied with a fixed polynomial a(x):
+ \[a(x) = {03}•x3 + {01}•x2+ {01}•x + {02}\]
+As explained in the section \hyperref[sec:polyGF]{Polynomials with coefficient in GF($2^8$)}, this multiplication is performed with a rounded matrix such as:
+\begin{figure}[htb]
+	\begin{center}
+  		\includegraphics[width=0.50 \textwidth,]{mixColEnc.png} 
+ 	\end{center}
+\end{figure}
+Giving with a row by column multiplication
+\[s^{'}_{0,c} = (\{0\;2\} * s_{0,c}) \oplus  (\{0\;3\} * s_{1,c}) \oplus  s_{2,c} \oplus  s_{3,c}\]
+\[s^{'}_{1,c} = s_{0,c} \oplus  (\{0\;2\} * s_{1,c}) \oplus  (\{0\;3\} * s_{2,c}) \oplus  s_{3,c}\]
+\[s^{'}_{2,c}= s_{0,c} \oplus    s_{1,c} \oplus (\{0\;2\} * s_{2,c}) \oplus (\{0\;3\} * s_{3,c} )\]
+\[s^{'}_{3,c}= (\{0\;b\} * s_{0,c} ) \oplus  s_{1,c} \oplus  s_{2,c} \oplus  (\{0\;e\} * s_{3,c} )\]
+
+\subsubsection{AddRoundKey ()}
+The subkey is added by combining each byte of the state with the corresponding byte of the subkey using bitwise XOR.
+ \[[ s^{'}_{0,c} , s^{'}_{1,c} , s^{'}_{2,c} , s^{'}_{3,c} ] = [ s_{0,c} , s_{1,c} , s_{2,c} , s_{3,c} ] \oplus [  RoundKey ] \]
+
+\begin{figure}[htb]
+	\begin{center}
+  		\includegraphics[width=0.75 \textwidth,]{addRoundKey.png} 
+ 	\end{center}
+\end{figure}
+
+\subsubsection{Key schedule}
+How the key round is obtained:
+\begin{figure}[htb]
+	\begin{center}
+  		\includegraphics[width=0.75 \textwidth,]{keyRound.png} 
+ 	\end{center}
+\end{figure}
+The first keys are obtained directly from the encryption key, while the ones of the next rounds from a transformation followed by a xor with the round constant (Rcon). Rcon is a constant that takes different values depending on the round need. Can be summarised as this table:
+
+\begin{table}[]
+    \centering
+    \begin{tabular}{|l*{10}{|c}|}
+    \hline
+        i     & 1  & 2  & 3  & 4  & 5  & 6  & 7  & 8  & 9  & A \\
+      $rc_i$  & 01 & 02 & 04 & 08 &	10 & 20 & 40 & 80 &	1B & 36\\
+    \hline     
+    \end{tabular}
+\end{table}
+where the bits of $rc_i$ are treated as the coefficients of an element of the finite field $GF(2)[x]/(X^8+x^4+x^3+x+1)$ so that $rc_{10}=3616=001101102$ represents the polynomial $x^5+x^4+x^2+x$
+As it is possible to see from the previous picture, the transformation consist of a shift of the word and of a function that applies an S-box. .
+This type of action is called “key whitening” and consist in the iteration of a group of operations that allow varying the key in order to increase the security of a block cipher.
+
+\subsection{Attacks}
+The KeyExpansion algorithm is useful to provide the security against attacks like:
+\begin{itemize}
+
+    \item Related-Key attack( some mathematical relationship connecting the keys is known to the attacker. For example, the attacker might know that the last 80 bits of the keys are always the same, even though they don't know, at first, what the bits are)
+    \item Attacks in which part of the key encryption is known by the cryptoanalyst
+    \item Attacks in which the key encryption  is known and it is used as compression function (hash function)
+\end{itemize}
+KeyExpasion, specifically its the round structure, has also an important role in the elimination of symmetries like Round Trasformation symmetry (treats all the byte of the state in the same way) and simmetry among rounds (the Round Trasformation is the same for all the rounds ).
+Each operation contributes to AES’s security in a specific way:
+\begin{itemize}
+    \item	Without KeyExpansion, all rounds would use the same key, K, and AES would be vulnerable to slide attacks.
+    \item	Without AddRoundKey, encryption would not depend on the key; hence, anyone could decrypt any ciphertext without the key.
+    \item	SubBytes brings nonlinear operations, which add cryptographic strength.
+    \item	 Without ShiftRows, changes in a given column would never affect the other columns, meaning you could break AES by building four232-element codebooks for each column. 
+    \item	Without MixColumns, changes in a byte would not affect any other bytes of the state. A chosen-plaintext attacker could then decrypt any ciphertext after storing 16 lookup tables of 256 bytes each that hold the encrypted values of each possible value of a byte.
+\end{itemize}
+
+\subsection{Decryption}
+The Rijndael structure is such that the sequence of transformation in the decryption is the same of the encryption, with the transformation substituted by their inverse and a modification of the scheduling of the key.
+\subsubsection{InvShiftRows ()}
+\begin{figure}[htb]
+	\begin{center}
+  		\includegraphics[width=0.75 \textwidth,]{shiftRowsInv.png} 
+ 	\end{center}
+\end{figure}
+
+\subsubsection{InvSubBytes ()}
+The inverse of the S-box, used in the transformation, can be simplified in the hexadecimal notation:
+\begin{figure}[htb]
+	\begin{center}
+  		\includegraphics[width=0.75 \textwidth,]{sboxHexDec.png} 
+ 	\end{center}
+\end{figure}
+Using the same example of the section \hyperref[sec:sboxEnc]{SubBytes()} :
+\[s^{’}_{1,1}=\{e\;d\} \longrightarrow s_{1,1}=\{5\; 3\}\]
+
+\subsubsection{InvMixColumns()}
+Similarly to the encryption the columns represent the polynomials with coefficient in the GF($2^8$) finite field that are modulo $x^4+1$ multiplied  with a fixed polynomial $a^{-1}(x)$:
+\[a^{-1}(x) = \{0\;b\}•x^3 + \{0\;d\}•x^2+ \{0\;9\}•x + \{0\;e\}\]
+
+As seen in \hyperref[sec:polyGF]{Polynomials with coefficient in GF($2^8$)}:
+\begin{figure}[htb]
+	\begin{center}
+  		\includegraphics[width=0.75 \textwidth,]{mixColDec.png} 
+ 	\end{center}
+\end{figure}
+
+\[s^{'}_{0,c}= (\{0\;e\} * s_{0,c}) \oplus (\{0\;b\} * s_{1,c}) \oplus (\{0\;d\} * s_{2,c})\oplus  (\{0\;9\} * s_{3,c})\]
+\[s^{'}_{1,c}= (\{0\;9\} * s_{0,c}) \oplus  (\{0\;e\} * s_{1,c})\oplus (\{0\;b\} * s_{2,c}) \oplus (\{0\;d\} * s_{3,c})\]
+\[s^{'}_{2,c}= (\{0\;d\} * s_{0,c}) \oplus (\{0\;9\} * s_{1,c}) \oplus (\{0\;e\} * s_{2,c}) \oplus (\{0\;b\} * s_{3,c})\]
+\[s^{'}_{3,c}= (\{0\;b\} * s_{0,c}) \oplus (\{0\;d\} * s_{1,c}) \oplus (\{0\;9\} * s_{2,c}) \oplus (\{0\;e\} * s_{3,c})\]
+\subsubsection{InvAddRounfKey()}
+This step only performs a XOR, therefore it is the same of the AddRoundKey().
+
+
+
+%Considering the (register, i, j), RC4 can be found up to 256! × 2562 (approximately 21700 or 5.62 × 10511) states.
+
+
+\end{document}
+
+
