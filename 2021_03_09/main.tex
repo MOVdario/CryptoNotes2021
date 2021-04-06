@@ -18,9 +18,9 @@
 \usepackage{braket}
 
 
-\title{Lesson 2021-03-09}
+\title{Lesson 2021-03-09 (Week 2)}
 \begin{document}
-
+\date{}
 \maketitle
 \section{Stream ciphers}
 Let's consider a typical cryptography application: GSM. We have communication between the MT (mobile terminal) and the BS (base station) through analog signals, which contain our voice. While going from the MT to the BS our voice is encrypted with \textbuf{stream ciphers}. 
@@ -85,13 +85,13 @@ A hardware random number generator typically consists of a transducer to convert
 
 The main application for electronic hardware random number generators is in cryptography, where they are used to generate random cryptographic keys to transmit data securely. They are widely used in Internet encryption protocols such as Transport Layer Security (TLS). 
 \subsection{PRNG (Pseudo Random Number Generator}
-In this case the random sequence is computed, i.e it's \textbuf{deterministic}. This makes the sequence not so random after all. How are these sequencies computed?
+In this case the random sequence is computed, i.e it's \textit{deterministic}. This makes the sequence not so random after all. How are these sequencies computed?
 Let's give a more specific definition.
 
 A PRNG is a function $G: \mathbb{Z}_2^n \to \mathbb{Z}_2^{l(n)}$, $l(n) > n$ (expansion factor), such that no adversary $\mathscr{A}$ succeed with probability > 1/2 the so called \textbuf{PRNG indistinguishability experiment} $PRG_{\mathscr{A, G}}(n)$:
 \begin{enumerate}[label=\alph*)]
-    \item A uniform bit $b \in \{0,1\}$ is chosen. If b = 0 then choose a uniform r $\in \{0,1\}^{l(n)}$. If b = 1 then choose a uniform $s \in \{0,1\}^n$ and set $r := G(s)$.
-    \item The adversary $\mathscr{A}$ is given r, and outputs a bit b'.
+    \item A uniform bit $b \in \{0,1\}$ is chosen. If b = 0 then a uniform r $\in \{0,1\}^{l(n)}$ is randomly chosen. If b = 1 then a uniform seed $s \in \{0,1\}^n$ is randomly chosen and then r is computed as $r := G(s)$.
+    \item The adversary $\mathscr{A}$ is given r, and outputs a bit b' as the guess of b.
     \item The output of the experiment is defined to be 1 if b'=b, and 0 otherwise.
 \end{enumerate}
 The gunction $G$ expands $n$ bits $s \in \mathbb{Z}_2^n$ into a long sequence $G(s)$ of $l(n)-$bits.
@@ -102,7 +102,7 @@ In general we can construct a PRNG from two algorithms (Init, GetBits):
     \item Init periodically takes as input a \textbuf{seed} $s$ and an optional IV (initialization vector) from a TRNG (i.e an entropy source). It uses them to update the \textit{entropy pool} (basically a memory buffer) and outputs an initial state $st_0$.
     \item GetBits takes an input state $st_i$, outputs a bit $y$ and updates the state to $st_{i+1}$.
 \end{itemize}
-Let's have a look to a pseudo-code implementation:
+\textcolor{blue}{Code example: PRNG}
 
 $st_0$ = Init(s,IV)
 
@@ -113,12 +113,13 @@ for i = 1 to $l(n)$:
     return $y_1, ..., y_{l(n)}$
     
 \begin{figure} [H]
-    \includegraphics[scale=0.5]%
+\centering
+    \includegraphics[scale=0.4]%
 {synchronous_stream.png}
-   \caption{Representation of a stream cipher (we'll discuss later about it) using a PRNG. The plaintext is represented by $x_n...x_1x_0$ bits, while the PRNG generates $s_n...s_1s_0$ random bits and $y_n...y_1y_0$ are the ciphertext bits.}
+   \caption{Representation of a stream cipher using a PRNG. The plaintext is represented by $x_n...x_1x_0$ bits, while the PRNG generates $s_n...s_1s_0$ random bits and $y_n...y_1y_0$ are the ciphertext bits.}
     \label{synch_stream}
 \end{figure}
-To construct a scheme secure for encrypting multiple messages, we must design a scheme in which encryption is \textit{randomized} so that when the same message is encrypted multiple times, different ciphertexts can be produced. This may seem impossible since decryption must always be able to recover the message. However, we will soon see how to achieve it.
+To construct a scheme secure for encrypting multiple messages, we must design a scheme in which encryption is \textit{randomized} so that when the same message is encrypted multiple times, different ciphertexts can be produced. This may seem impossible since decryption must always be able to recover the message. 
 \subsection{CPRGNG (Cryptographic Pseudo Random Number Generator)}
 This is the cryptographycally secure version of PRNG (so far we've just analyzed how random numbers are generated, we don't have spoken about cryptography yet).
 There are both cryptographic and non-cryptographic PRNGs. Non-
@@ -139,7 +140,7 @@ PRNGs can work in two different modes: synchronized and unsynchronized
 {synchro_mode.png}
    \caption{The key is represented by k, $m_i$ are the plaintexts while $c_i$ are the ciphertexts. Note that in this mode the stream cipher doesn't need to use the IV}
 \end{figure}
-Using (Init, GetBits) the parties construct $G(k,1^l)$ running l-times using a shread key k. Concretely both begin by computing $st_0$=Init(k).
+Using (Init, GetBits) the parties construct $G(k,1^l)$ running l-times using a shared key k. Concretely both begin by computing $st_0$=Init(k).
 
 To encrypt the first message $m_1$ of length $l_1$, the sender runs GetBits $l_1$-times beginning at $st_0$ getting bits $y_1...y_{l_1}=pad_1$ along with an updated state $st_{l_1}$. 
 
@@ -169,15 +170,13 @@ Note: typical mistakes are related to the optional IV e.g a fixed constant in so
     \item CCA: The cryptanalyst can choose different ciphertexts to be decrypted and has access to the decrypted plaintext. 
     \item CPA: The cryptanalyst not only has access to the ciphertext and associated plaintext for several messages, but he also chooses the plaintext that gets encrypted. 
 \end{itemize}
-
-\textcolor{red}{Exercise:}
-
+\textcolor{red}{Exercise 2.2.3:}
 
 Let $G(k,IV,1^{\abs{m}})$ as before and consider the following symmetric encryption scheme:
 
-k is random generated by Gen and shared by the parties.
+$k \in \{0,1\}^n$ is random generated by Gen and shared by the parties.
 
-\textbuf{Enc}: on input a key k and a message m choose a random IV and output:
+\textbuf{Enc}: on input the key k and a message $m \in \{0,1\}^n$ choose a random IV and output:
 \begin{equation*}
     Enc_k(m)=\langle IV,G(k,IV,1^{\abd{m}}) \xor m \rangle
 \end{equation*}
@@ -185,10 +184,8 @@ k is random generated by Gen and shared by the parties.
 \begin{equation*}
     Dec_k(\langle IV,c \rangle)=G(k,IV,1^{\abs{c}}) \xor c=m
 \end{equation*}
-Show that the above is not CCA-secure. Hint: an adversary can guess the bit b using $m_0$= all zeros and $m_1$= all ones and a CCA-oracle query.
-
+Show that the above is not CCA-secure. Hint: an adversary can guess the bit b using $m_0$= all zeros and $m_1$= all ones and a CCA-oracle query. \newline
 \textcolor{red}{Solution:}
-
 
 Since the IV is sent in clear, the eavesdropper can obtain it. In a CCA the attacker chooses a ciphertext and has access to an oracle which can decrypt it but the attacker can't recover the key (which is actually the goal).
 Let's say that the attacker chooses any 2 messages $m_0$ (e.g all zeros) and $m_1$ (e.g all ones) of equal length.
@@ -204,20 +201,30 @@ $s_0$= seed
     s_{i+1} \equiv a\cdot s_i + b(mod m), i=0,1,...
 \end{equation*}
 Where a and b are constants and a,b,$s_i$ are $log_2m$ bits long.
-A well-known example is \textit{rand()} of ANSI C, where $s_0 = 12345$ and $s_{i+1} \equiv 1103515245 \cdot s_i + 12345(mod 2^31), i=0,1,...$
-    
-\textcolor{red}{Exercise:}
+A well-known example is \textit{rand()} of ANSI C, where $s_0 = 12345$ and $s_{i+1} \equiv 1103515245 \cdot s_i + 12345(mod 2^31), i=0,1,...$ \newline
+\textcolor{red}{Exercise 2.3.1:}
 
-Setting b=0, $s_0=47594118$, a=23 and $m=10^8+1$, show that each $s_n$ is divisible by 17. It is possible to show that the number 23 is the best choise in the sense that no other number produces a longer period, and no smaller number produces a period more than half as long.
+Setting b=0, $s_0=47594118$, a=23 and $m=10^8+1$, show that each $s_n$ is divisible by 17. It is possible to show that the number 23 is the best choice in the sense that no other number produces a longer period, and no smaller number produces a period more than half as long.
+\newline\textcolor{red}{Solution:}
 
-\textcolor{red}{Solution:}
+Since b = 0, then  $s_n$ is called \textit{multiplicative LCG} and can be written as 
+\begin{equation*}
+    s_n = a\cdot s_{n-1}\hspace{1} (mod\hspace{1} 10^8+1) = a^n\cdot s_0 \hspace{1}(mod\hspace{1}10^8+1) = 23^n \cdot 47594118 \hspace{1} (mod\hspace{1} 10^8+1)
+\end{equation*}
+Observation: both $s_0$ and $m = 10^8+1$ are divisible by 17. from the rules of modular arithmetic we know that $a=b(modm)$ iff m divides $a-b$, i.e $a-b=0(modm)$
+Then we can rewrite:
+$s_n-23^n \cdot s_0=0(mod10^8+1)$
+If a number n is divisible by m, then it is divisible also by p (p < m) if m is divisible by p. Then $s_n-23^n \cdot s_0=0(mod10^8+1) = 0(mod17)$.
 
-%Since b = 0, then  $s_{i+1}$ can be computed as 
-%\begin{equation*}
- %   s_{i+1} = a\cdot s_{i}\hspace{1} (mod\hspace{1} 10^8+1) = %a^{i+1}\cdot s_0 \hspace{1}(mod\hspace{1}10^8+1)
-%\end{equation*}
+Since $s_0$ is divisible by 17, we can replace $s_0$ with $0(mod17)$. Finally:
+\begin{equation*}
+s_n-23^n \cdot s_0=0(mod10^8+1) \longrightarrow s_n-23^n \cdot 0(mod17)=0(mod17) \longrightarrow s_n = 0(mod17)
+\end{equation*}
+Therefore every $s_n$ is divisible by 17.
 
-Here's a code example of a Lehmer LCG (also called Park Miller RNG):
+We can have a LCG with maximum period m iff the multiplier a is a primitive root of m. In modular arithmetic, a number a is called a primitive root modm if every number coprime to m is congruent to a power of a modm. Mathematically, a is a primitive root modm if and only if for any integer n such that gcd(n,m)=1, there exists an integer k such that$g^k\equiv a(modm)$.
+
+\textcolor{blue}{Code example: Lehmer LCG (also called Park Miller RNG)}
 
 s = 1
 
@@ -258,21 +265,6 @@ In the upper figure we have m flip flops and m possible feedback locations, all 
 If $p_i = 1$ (closed switch), the feedback is active. If $p_i = 0$ (open switch), the corresponding flip-flop output is not used for the feedback.
 If we multiply the output of flip-flop i by its coefficient $p_i$ , the result is either the output value if $p_i = 1$, which corresponds to a closed switch, or the value zero if $p_i = 0$, which corresponds to an open switch. The values of the feedback coefficients are crucial for the output sequence produced by the LFSR.
 
-Let’s assume the LFSR is initially loaded with the values $s_0 , . . . , s_{m−1}$ .
-
-In general, the output sequence can be described as:
-\begin{equation*}
-    s_{m+i}=\sum_{j=0}^{m-1} s_{i+j}p_j \hspace{1}mod2
-\end{equation*}
-Clearly, the output values are given through a combination of some previous output
-values. LFSRs are sometimes referred to as linear recurrences.
-
-LFSRs are often specified by polynomials using the following no-
-tation: An LFSR with a feedback coefficient vector $(p_{m−1} , . . . , p_1 , p_0 )$ is represented
-by the polynomial
-\begin{equation*}
-    P(x)=x^m+p_{m-1}x^{m-1}+...+p_1x+p_0
-\end{equation*}
 \subsection{Fibonacci LFSR}
 \begin{figure} [H]
     \centering
@@ -294,7 +286,7 @@ Where L is the linear map:
 \end{figure}
 It's important to notice that after some cycles the LFSR is replicated, then it becomes periodic. A LFSR can't have a period greater than $2^m-1$
 
-\textcolor{blue}{Example:} 
+\textcolor{red}{Exercise 2.4.1:} 
 
 Let's run the Fibonacci LFSR specified by $\chi_L(x)=x^4+x^3+1$ from the state [1000]. 
 $s_3=1,s_2=0,s_1=0,s_0=0$
@@ -308,8 +300,10 @@ The period is 15 ($2^4-1$) and The schema is the following one:
     \centering
     \includegraphics[scale=0.4]%
     {disegno.jpg}
+    \caption{Representation of the Fibonacci LFSR of the example: AND operators have been added when $p_i=1$ and there's the XOR operator where $s_i=1$}
 
 \end{figure}
+Starting from \textbf{s}=\{1,0,0,0\}, after every clock cycle the bits of this vector are right-shifted and the $s_0$ element is firstly AND-ed with $p_0$, then XOR-ed with $s_3$ AND-ed with $p_3$. This is the table of the cipher, which has a period of 15 (in fact at clock cycle 15 we have the same \textbf{s} as the beginning):
 \begin{displaymath}
 \begin{array}{|c|c|c|c|c|}
 \hline
@@ -334,13 +328,12 @@ CLK & s_3 & s_2 & s_1 & s_0 \\
 \hline
 \end{array}
 \end{displaymath}
-And so on.
 
 \begin{figure} [H]
     \centering
     \includegraphics[scale=0.2]%
     {hwfibolfsr.png}
-    \caption{A 16-bit Fibonacci LFSR. The feedback tap numbers shown correspond to a primitive polynomial in the table, so the register cycles through the maximum number of 65535 states excluding the all-zeroes state. If the taps are at the 16th, 14th, 13th and 11th bits (as shown), the feedback polynomial is
+    \caption{\textcolor{red}{Exercise 2.4.4}: A 16-bit Fibonacci LFSR. The feedback tap numbers shown correspond to a primitive polynomial, so the register cycles through the maximum number of 65535 $(2^16-1)$states excluding the all-zeroes state. If the taps are at the 16th, 14th, 13th and 11th bits (as shown), the feedback polynomial is
     $x^{16}+x^{14}+x^{13}+x^{11}+1$.}
 \end{figure}
 
@@ -359,18 +352,24 @@ Where P(x) is the feedback polynomial of the LFSR and
 depends on the initial state of the register. 
 
 One interesting consequence of the above equation is that it can be used to improve the implementation of key stream by reducing the taps of the LFSR. Here an example: since 
-
-$1+x+x^8=(1+x^2+x^3+x^5+x^6(1+x+x^2)$
-
+$1+x+x^8=(1+x^2+x^3+x^5+x^6)(1+x+x^2)$ (polynomial factorization)
 the key stream produced by a LFSR with feedback polynomial $1+x^2+x^3+x^5+x^6$ can be obtained using a LFSR with feedback polynomial $1+x+x^8$
-
-\textcolor{red}{Exercise:}
+\newline\textcolor{red}{Exercise 2.4.2:}
 If a key stream satisfies $s_{t+6}=s_t+s_{t+1}+s_{t+3}+s_{t+4}$ then it also satisfies $s_{t+8}=s_t+s_{t+7}$
+\newline\textcolor{red}{Solution:}
+Recalling that the output bit $s_m$ is computed as a feedback
+\begin{equation*}
+    s_m=f(\textbf{s})=\sum_{j=0}^{m-1}s_j\cdot p_j
+\end{equation*}
+we find that for $s_{t+6}=s_t+s_{t+1}+s_{t+3}+s_{t+4}$ we have $\textbf{p}=[p_0,p_1,p_2,p_3,p_4,p_5]=[1,1,0,1,1,0]$. Knowing that the feedback polynomial is written as $P(x)=1+p_{m-1}x+...+p_1x^{m-1}+p_0x^m \longrightarrow P(x)=1+x^6+x^5+x^3+x^2$. The same procedure can be applied to $s_{t+8}=s_t+s_{t+7}$. The latter has a feedback polynomial $P(x)=1+x+x^8$. From the upper example we know that the polynomial $1+x+x^8$ can be factorized as $(1+x^2+x^3+x^5+x^6)(1+x+x^2)$, then both the key streams are satisfied.
+
 \subsection{Galois LFSR}
 \begin{figure} [H]
     \centering
     \includegraphics[scale=0.4]%
     {galois.png}
+    \caption{Graphical representation of a Galois LFSR}
+    \label{Galois lfsr}
 \end{figure}
 
 In the Galois configuration the state $\textbf{s}=\lbrack g_0g_1...g_{m-2}g_{m-1}\rbrack $ is regarded as a polynomial $s(x)=g_0+g_1x+...+g_{m-2}x^{m-2}+g_{m-1}x^{m-1}$
@@ -389,9 +388,10 @@ and to get the remainder of the division by $\chi_L(x)$ we replace $x^m$ by $p_{
 \begin{displaymath}
 \begin{array}{c c c c c}
  &  & g_0x &... & g_{m-1}x^{m-1}\\
- g_{m-1}p_0 & g_{m-1}p_1x & g_{m-1]p_2x^2 &... & g_{m-1}p_{m-1}x^{m-1}\\
+ g_{m-1}p_0 & g_{m-1}p_1x & g_{m-1}p_2x^2 &... & g_{m-1}p_{m-1}x^{m-1}\\
  \hline
  g_{m-1}p_0 & (g_0+g_{m-1}p_1)x & (g_1+g_{m-1}p_2)^2 &... & (g_{m-2}+g_{m-1}p_{m-1})x^{m-1}\\
+ \end{array}
 \end{displaymath}
 Here the linear map L:
 \begin{figure} [H]
@@ -400,12 +400,7 @@ Here the linear map L:
     {matrixgalois.png}
 \end{figure}
 The passage to a new state \textbf{s'} is given by the multiplication $\textbf{s}\cdot L = \textbf{s'}$.
-Let's explain it better: 
-In the Galois configuration, when the system is clocked, bits that are not taps are shifted one position to the right unchanged. The taps, on the other hand, are XORed with the output bit before they are stored in the next position. The new output bit is the next input bit. The effect of this is that when the output bit is zero, all the bits in the register shift to the right unchanged, and the input bit becomes zero. When the output bit is one, the bits in the tap positions all flip (if they are 0, they become 1, and if they are 1, they become 0), and then the entire register is shifted to the right and the input bit becomes 1.
-
-To generate the same output stream, the order of the taps is the counterpart of the order for the conventional LFSR, otherwise the stream will be in reverse. Note that the internal state of the LFSR is not necessarily the same. The Galois register shown has the same output stream as the Fibonacci register in the first section. A time offset exists between the streams, so a different startpoint will be needed to get the same output each cycle. Furthermore the output stream $...s_{m-1}...s_2s_1s_0$ of a Galois LFSR with $G(x)=\chi_L(x)$ is the same as the output of a Fibonacci LFSR with $\chi_L(x)$ and initial state $s_{m-1}...s_2s_1s_0$.
-
-The calculation of  $\textbf{s}\cdot L $ of the Galois LFSR can be furthermore done using only bit operations. Namely:
+\newline\textcolor{red}{Exercise 2.4.3}: Show that the calculation of  $\textbf{s}\cdot L $ of the Galois LFSR can be furthermore done using only bit operations. Namely:
 \begin{equation*}
   \textbf{s}\cdot L =
   \begin{cases}
@@ -413,12 +408,16 @@ The calculation of  $\textbf{s}\cdot L $ of the Galois LFSR can be furthermore d
     \text{shiftright(\textbf{s}$\xor$\textbf{p})} & \text{if $g_{m-1}=1$}
   \end{cases}
 \end{equation*}
-where $\textbf{p}=\lbrack p_0p_1p_2p_3...p_{m-1}\rbrack$.
+where $\textbf{p}=\lbrack p_0p_1p_2p_3...p_{m-1}\rbrack$. 
+\newline\textcolor{red}{Solution:}
+In the Galois configuration, when the system is clocked, bits that are not taps are shifted one position to the right unchanged. The taps, on the other hand, are XORed with the output bit before they are stored in the next position. The new output bit is the next input bit. The effect of this is that when the output bit is zero, all the bits in the register shift to the right unchanged, and the input bit becomes zero. When the output bit is one, the bits in the tap positions all flip (if they are 0, they become 1, and if they are 1, they become 0), and then the entire register is shifted to the right and the input bit becomes 1.
+
+To generate the same output stream, the order of the taps is the counterpart of the order for the conventional LFSR, otherwise the stream will be in reverse. Note that the internal state of the LFSR is not necessarily the same. The Galois register shown has the same output stream as the Fibonacci register in the first section. A time offset exists between the streams, so a different startpoint will be needed to get the same output each cycle. Furthermore the output stream $...s_{m-1}...s_2s_1s_0$ of a Galois LFSR with $G(x)=\chi_L(x)$ is the same as the output of a Fibonacci LFSR with $\chi_L(x)$ and initial state $s_{m-1}...s_2s_1s_0$.
+
 \begin{figure} [H]
     \centering
     \includegraphics[scale=0.2]%
     {hwgaloislfsr.png}
-    \caption{A 16-bit Galois LFSR. The register numbers above correspond to the same primitive polynomial as the Fibonacci example but are counted in reverse to the shifting direction.}
+    \caption{\textcolor{red}{Exercise 2.4.4}: A 16-bit Galois LFSR. The register numbers above correspond to the same primitive polynomial as the Fibonacci example but are counted in reverse to the shifting direction.}
 \end{figure}
 \end{document}
-
