@@ -28,12 +28,11 @@
 AES (aka Rijndael from its invetor's name) is a block ciphers  with blocks of 128 ($2^7$) bits. It is important that blocks are not too large in order to minimize both the length of ciphertext and the memory footprint.
 As for the memory footprint, in order to process a 128-bit block, you need at least 128 bits of memory. This is small enough to fit in the registers of most CPUs or to be implemented using dedicated hardware circuits. Blocks of 64, 128, or even 512 bits are short enough to allow for efficient implementations in most cases.
 When ciphertexts’ length or memory footprint is critical, you may have to use 64-bit blocks, because these will produce shorter ciphertexts and consume less memory. If it is possible , 128-bit or larger blocks are better. If you need to encrypt a 16-bit message when blocks are 128 bits, you’ll first need to convert the message into a 128-bit block by means of padding. Blocks shouldn’t be too small otherwise, they may be susceptible to codebook attacks. The codebook attack works like this with 16-bit blocks:
-1. Get the 65536 ($2^16$) ciphertexts corresponding to each 16-bit
-plaintext block.
-2. Build a lookup table—the codebook—mapping each ciphertext block
-to its corresponding plaintext block.
-3. To decrypt an unknown ciphertext block, look up its corresponding
-plaintext block in the table.
+\begin{enumerate}
+	\item Get the 65536 ($2^16$) ciphertexts corresponding to each 16-bit plaintext block.
+	\item Build a lookup table—the codebook—mapping each ciphertext block to its corresponding plaintext block.
+	\item To decrypt an unknown ciphertext block, look up its corresponding	plaintext block in the table.
+\end{enumerate}
 \section*{Rounds}
 Computing a block cipher boils down to computing a sequence of rounds.
 In a block cipher, a round is a basic transformation that is simple to specify and to implement, and which is iterated several times. Each round should also have an inverse in order to make it possible for a recipient to compute back to plaintext. The round functions—R1, R2, and so on—are usually identical algorithms, but they are parameterized by a value called the round key.
