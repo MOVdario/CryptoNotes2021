@@ -1,0 +1,353 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage{physics}
+\usepackage{calrsfs}
+\usepackage{mathalpha}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{fixltx2e}
+\usepackage{enumitem}
+\usepackage{float}
+
+%Path relative to the main .tex file 
+\graphicspath{ {./images/} }
+
+
+\begin{document}
+\title{2021-04-20}
+
+
+\section{How to compute the inverse a · x = 1 (mod n)} % (fold)
+\label{sec:how_to_compute_the_inverse}
+
+In this lesson is presented a recap of how to compute the inverse in a given ring. Are shown three methods derived from the maths theory plus a fourth one which is an algorithmic one (is not only one not computationally feasible).
+For all the methods is shown the example : 29 · x = 1 (mod 45)
+\subsection{Gauss-Jordan like method} % (fold)
+\label{ssub:gauss_jordan_like_method}
+The first method described is the Gauss-Jordan like method, that consists in considering the modulo equation as column of a matrix. To do the inverse you have to associate an identity-vector-column and try to get the identity instead of your initial column, at the end on the right side, as first element of the vector, you obtain the inverse. The method is described in the figure below.
+
+\begin{figure} [H]
+    \centering
+    \includegraphics[scale=0.6]%
+    {GaussJordanLike.png}
+\end{figure}
+
+
+% subsection gauss_jordan_like_method (end)
+
+\subsection{Kuttaka method} % (fold)
+\label{sub:kuttaka_method}
+
+Here is presented an example of usage of the Kuttaka method.
+
+The problem is: 
+\[29 · x = 1 (mod 45)\]
+
+Step 1: Mutual divisions
+\begin{itemize}
+    \item Divide 45 by 29 to get quotient 1 and remainder 16 (q=1 r=16)
+    \item Divide 29 by 16 to get quotient 1 and remainder 13 (q=1 r=16)
+    \item Divide 16 by 13 to get quotient 1 and remainder  3 (q=1 r=16)
+    \item Divide 13 by  3 to get quotient 4 and remainder  1 (q=1 r=16)
+    \item Divide  3 by  1 to get quotient 3 and remainder  0 (q=1 r=16)
+    \item The process of mutual division stops here.
+\end{itemize}
+
+Quotients =  1, 1, 1, 4, 3
+
+Number of quotients =  4(an even integer) (excluding the first quotient) \newline
+
+Step 2: Computation of last minus one quotient
+Let us assume that the last minus one quotient obtained is called c. The right c to be inserted in the next step of the computation should be equal to compute as follow:
+if (Number of quotients is an even number)
+  the new c = (c+1)
+else (so the number of quotient is an odd number)
+  the new c = (c-1)
+
+In our case c = 4 = 3 + 1\newline\newline
+Step 3: Computation of successive numbers
+
+Write elements of 1st column\hspace*{10mm}:   1,\hspace*{5mm}1,\hspace*{5mm}1, \hspace*{5mm}4, \hspace*{5mm}4,\hspace*{5mm}1
+
+Compute elements of 2nd column\hspace*{3.5mm}:   1,\hspace*{5mm}1,\hspace*{5mm}1,\hspace*{4mm} 17,\hspace*{5mm}4
+
+Compute elements of 3rd column\hspace*{4mm}:   1,\hspace*{5mm}1,\hspace*{5mm}21,\hspace*{4mm}17      
+
+Compute elements of 4th column\hspace*{4mm}:   1,\hspace*{3mm}38,\hspace*{5mm}21          
+
+Compute elements of 5th column\hspace*{4mm}:  59, 38
+
+Where 59 (mod 45) = 14, which is our result\newline               
+
+The computational procedure is shown below:
+
+\hspace*{15mm}Quotient 0   : 1\hspace*{10mm}1\hspace*{10mm}1\hspace*{10mm} 1\hspace*{10mm} 59
+
+\hspace*{15mm}\hspace*{38mm}(38×1 + 31 =  59)$\nearrow$
+
+\hspace*{15mm}Quotient 1   : 1\hspace*{10mm}1\hspace*{10mm}1\hspace*{10mm}38\hspace*{10mm}38 
+     
+\hspace*{15mm}\hspace*{25mm}(21×1 + 17 =38)$\nearrow$
+ 
+\hspace*{15mm}Quotient 2   : 1\hspace*{10mm}1\hspace*{10mm}21\hspace*{10mm}21
+
+\hspace*{15mm}\hspace*{15mm}(17×1 + 4 = 21)$\nearrow$
+ 
+\hspace*{15mm}Quotient 3   : 4\hspace*{10mm} 17 \hspace*{10mm}17 
+
+\hspace*{15mm}\hspace*{5mm}(4×4 + 1 = 17)$\nearrow$
+
+\hspace*{15mm}Quotient 4   : 4\hspace*{10mm}4
+\hspace*{15mm}\newline\newline
+\hspace*{15mm}\hspace*{25mm}1 
+
+
+% subsection kuttaka_method (end)
+
+\subsection{Extended Euclidean Algorithm} % (fold)
+\label{sub:extended_euclidean_algorithm}
+
+The Extended Euclidean Algorithm is based on the concept of the Great Common Divisior, in particular is true that :
+if \[b = a · q + r \]then \[gcd(a,b) = gcd(r,a).\]
+
+The method follows two rules : 
+\begin{itemize}
+    \item Forward rule : \[(a,b) \xrightarrow[]{q} (r,a)\]  where r = b (mod a) and q = a // b (// is the integer division)
+    \item Backward rule : \[(a-q·r,r) \xleftarrow[]{q} (r,a)\]   
+\end{itemize}
+
+
+
+
+In our example :    29 · x = 1 (mod 45)
+
+\[(29,45)\xrightarrow[]{1}(16,29)\xrightarrow[]{1}(13,16)\xrightarrow[]{1}(3,13)\xrightarrow[]{4}(1,3)\xrightarrow[]{3}(0,1)\]
+\[(14,-9)\xleftarrow[]{1}(-9,5)\xleftarrow[]{1}(5,-4)\xleftarrow[]{1}(-4,1)\xleftarrow[]{4}(1,0)\xleftarrow[]{3}(0,1)\] 
+
+Again 14 is our result
+
+
+% subsection extended_euclidean_algorithm (end)
+
+\subsection{Python script } % (fold)
+\label{sub:python_script_}
+
+\begin{figure} [H]
+    \centering
+    \includegraphics[scale=0.8]%
+    {PythonScriptInverse.png}
+\end{figure}
+% subsection python_script_ (end)
+
+% section how_to_compute_the_inverse (end)
+
+
+\section{One-way functions and trapdoors} % (fold)
+\label{sec:one_way_functions_and_trapdoors}
+
+
+\subsection{One-way property (or preimage resistance)} % (fold)
+\label{ssub:one_way_property_}
+
+A function \(f : D \xrightarrow{} T \) is one-way if for \(x ∈ù\in D\) the value \(f(x)\) can be computed efficiently, but for any \(y \in T\), it is not computationally feasible to find \(x \in D\) such that \(f(x) = y \)
+
+\begin{figure} [H]
+    \centering
+    \includegraphics[scale=0.7]%
+    {OneWay.png}
+\end{figure}
+
+In crypto are not used function that are not invertible at all, this concept of one-way is based on conjectures.
+% subsubsubsection one_way_property_ (end)
+
+\subsubsection{Trapdoor & block-cipher} % (fold)
+\label{sub:trapdoor_block_cipher}
+
+One-way functions \(f\) can be obtained by using a secure block-cipher (Enc,Dec).
+
+Example 1) :
+\[f:K\xrightarrow{}C\]
+
+from the key space to the cipher-text space is defined as follows:  pick a random plain-text \(P_0\) and put
+
+\[f(k) :=Enc_k(P_0)\]
+ 
+So, since encryption should be efficient we get that computing \(f(k)\) is easy.  But finding k for a given C is crypto analysis which should be hard.
+
+Example 2) :
+\[f:P \xrightarrow{} C\]
+
+from plain-text space to cipher-text space defined as
+
+\[f(P) :=Enc_k(P)\]
+ 
+Key \textbf{k} is regarded as a \textbf{trapdoor} which is the special information which makes easy the inversion.\\
+
+
+Well-known examples are RSA and Rabin functions \(f(x) =x^e \mod n\) and \(f(x) =x^2\mod   n\). The trapdoor is the factorization of \(n\) i.e.  the two prime numbers \(p,q\) such that \(n=p·q\).  For the Rabin’s function keep in mind the role of CRT (Chinese Remainder Theorem) + Tonelli-Shanks’ algorithm.
+
+If we take for example the Rabin function and we suppose to know the factorization of \(n = p · q\), is computationally feasible to compute \(x\) such as
+\[\begin{cases} x^2 = y \mod p \\ x^2 = y \mod q \end{cases}\] 
+
+using the Cipolla's method, or the Tonelli's one, the with CRT computing the inverse.
+% subsubsection trapdoor_block_cipher (end)
+
+\subsection{Discrete Logarithm} % (fold)
+\label{sub:discrete_logarithm}
+A typical example of one-way function is the power map \(f : \mathbb{Z}_n \xrightarrow{} <\alpha>\)
+
+\[\gamma \xrightarrow{} \alpha^\gamma\]
+
+where \(\alpha\) has  order \(n\).   Usually,  the  best  way  to  solve \(f(\gamma)\)  = \(y\) is  related  to  the  Birthday’s Paradox, an algorithm of complexity \(O(\sqrt{n}\)):
+If \( \beta = \alpha^\gamma\) and
+
+\begin{center}
+\(\alpha^a\beta^b=\alpha^A\beta^B\)     in \(<\alpha>\) 
+\end{center}
+\textit{(The computation above is regarded as a collision in which our have same result but different exponent)}
+then:
+
+you should find a,b,B,A in \(\mathbb{Z}_n\) 
+\[\alpha^a \alpha^{\gamma b} = \alpha^A \alpha^{\gamma B}\]
+\[\alpha^{a + \gamma b} = \alpha^{A + \gamma B}\]
+\[a + \gamma b = A + \gamma B \mod n\]
+\[ \gamma = \frac{(A - a)}{(b - B)} \mod n\]
+
+
+A,B,a,b are exponents and belongs to $\mathbb{Z}$\textsubscript{\(n\)} and not to \(<\alpha>\), so the belongs to the domain of the transformation and not to the co-domain.
+
+Ex. \(\mathbb{Z}^*_n\) = \(\{ 1,2,3,4,5,6\}\), \(p = 7\). If we take \(\alpha = 2\) then  \(<\alpha> = \{2,4,1\}\) with \(n = 3\)
+
+\[ f : \mathbb{Z}^*_n \xrightarrow{} \mathbb{Z}<\alpha>  \subset \mathbb{Z^*}_p\]
+
+This is the one-way function used by Diffie-Hellman in his key exchange cryptosystem.
+% subsection discrete_logarithm (end)
+
+\subsection{Factorization and CRT} % (fold)
+\label{sub:factorization_and_crt}
+
+Another one-way is the map which takes two prime numbers \(p,q\) and gets the product \(N=p·q\).Namely, it is computationally efficient to multiply \(p·q\) but is computationally expensive to compute both factors \(p\) and \(q\) from \(N\).
+
+This is the one-way function that together with the CRT it is used in RSA.
+
+% subsection factorization_and_crt (end)
+
+\subsection{Computing with encrypted data} % (fold)
+\label{sub:computing_with_encrypted_data}
+
+Another way of using the one-way function is with encrypted data. To understand this thing we have to put in this scenario:
+
+Alice has a particular value \(x\) and wants to compute \(f(x)\) but either her computer is broken or it has not enough computational power.Bob is willing to compute \(f(x)\) for her, but Alice is not keen on letting Bob know her \(x\).
+In such situation Bob behaves as an \textbf{oracle} i.e. he answer questions.
+
+A way of encrypting the for the oracle is using the discrete logarithm as described in the figure below.
+
+\begin{figure} [H]
+    \centering
+    \includegraphics[scale=0.7]%
+    {DLEncryptedData.png}
+\end{figure}
+
+From the figure above it is easy to understand how Alice is to obtain her computation without letting the oracle know her data. 
+% subsection computing_with_encrypted_data (end)
+% section one_way_functions_and_trapdoors (end)
+
+\section{Hash functions} % (fold)
+\label{sec:hash_functions}
+
+A cryptographic hash function (CHF) is a mathematical algorithm that maps data of arbitrary size (often called the "message") to a bit array of a fixed size (the "hash value", "hash", or "message digest"). It is a one-way function, that is, a function which is practically infeasible to invert.
+
+\begin{center}
+\textbf{Hash} : \(\mathbb{Z}^*_2 \xrightarrow{} \mathbb{Z}^n_2\)
+\end{center}
+\(\mathbb{Z}^*_2\) contains any possible finite set of bits ( so any sequence of bits of any length)
+
+\(\mathbb{Z}^n_2\) can be considered as the product of \(\mathbb{Z}_2\) for \textit{n} times. It represents the set of all strings of bits of length \textit{n},
+
+The digest is usually of size \(n = 160,256,512\) bits. The hash value is computed as \(y  = \textbf{Hash}(x) \).
+
+\begin{figure} [H]
+    \centering
+    \includegraphics[scale=1]%
+    {HashFunction.png}
+\end{figure}
+
+\textit{"Hash functions-such as MD5, SHA-1, SHA-256, SHA-3, and BLAKE2 -comprise the cryptographer’s Swiss Army Knife:  they are used in digital signatures, public-key encryption,integrity verification,  message authentication,  password protection,  key agreement protocols, and many other cryptographic protocols" (from Aumasson18, Chapter 6)}\newline
+
+
+Hash functions with full (co)domain or with a parameter for the length of the digest can be also useful in applications e.g.SHAKE128(M,d) and SHAKE256(M,d).
+
+The properties of hash function are illustrated in the figure below :\\
+
+\begin{figure} [H]
+    \centering
+    \includegraphics[scale=0.7]%
+    {HashProperties.png}
+\end{figure}\newline
+
+
+
+In particular :
+\begin{itemize}
+    \item One-way : should be computationally infeasible to invert
+    \item Collision resistance : given \(x,y \in \mathbb{Z}^*_2\) should be computationally infeasible to have \(\textbf{Hash} (x) = \textbf{Hash}(y)\)
+    \item Second Preimage resistance or weak collision : if you have \(\textbf{Hash}(x) = y\) should be computationally infeasible to have \(\Tilde{x}\) such as \(\textbf{Hash}(\Tilde{x}) = y\)
+\end{itemize}
+
+\subsection{Collision: Birthday attack} % (fold)
+\label{sub:collision_birthday_attack}
+
+The so called Birthday attack is based on the Birthday paradox. 
+In probability theory, the birthday problem or birthday paradox concerns the probability that, in a set of n randomly chosen people, some pair of them will have the same birthday. In a group of 23 people, the probability of a shared birthday exceeds 50\%, while a group of 70 has a 99.9\% chance of a shared birthday. (By the pigeonhole principle, the probability reaches 100\% when the number of people reaches 367, since there are only 366 possible birthdays, including February 29.)
+
+These conclusions are based on the assumption that each day of the year is equally probable for a birthday. Actual birth records show that different numbers of people are born on different days. In this case, it can be shown that the number of people required to reach the 50\% threshold is 23 or fewer.
+
+The birthday problem is a veridical paradox: a proposition that at first appears highly counter intuitive, but is in fact true. While it may seem surprising that only 23 individuals are required to reach a 50\% probability of a shared birthday, this result is made more intuitive by considering that the comparisons of birthdays will be made between every possible pair of individuals. With 23 individuals, there are 23 × 22 / 2 = 253 pairs to consider, which is well over half the number of days in a year (182.5 or 183). 
+
+The representative curve is shown below:
+
+\begin{figure} [H]
+    \centering
+    \includegraphics[scale=0.25]%
+    {BdayParadox.png}
+\end{figure}
+
+The computation of our interest is when a collision occurs with a probability greater than 50\%.
+Called \(\Gamma_N\) the probability of having a collision with N elements, we want to know when  \(\Gamma_N = \frac{1}{2}\).
+To study this is necessary first to underline that our domain is composed by N elements whereas our co-domain is composed by 365 elements (days in a year). Defined \(1 -\Gamma_n\) as the probability of not having a collision, we can proceed as follows:
+\[ 1 -\Gamma_n = N ! \frac{\binom{365}{N}}{365^N}\]
+
+In the previous fraction at the numerator can be interpreted as from 365 days I take N days and I consider all the possible reordering, whereas at the denominator the number of possible maps from N to 365.
+
+Doing some computation we arrive at the result:
+\[ N = \sqrt{365\times2\times\log2} = 23 \]
+This number tells  us that with 23 people the probability that 2 people has the same birthday if 50\%
+
+All the general computations for the birthday attack are presented in the figure below:
+
+\begin{figure} [H]
+    \centering
+    \includegraphics[scale=1]%
+    {BdayAttack.png}
+\end{figure}
+
+Here there is an extract from \textit{KatLin15,page 168} on finding meaningful collisions.
+
+\begin{figure} [H]
+    \centering
+    \includegraphics[scale=1]%
+    {KatLin15.png}
+\end{figure}
+% subsection collision_birthday_attack (end)
+
+% section hash_functions (end)
+
+
+
+\section{exerciseù}
+
+\end{document}
