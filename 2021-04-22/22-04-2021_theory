@@ -111,7 +111,7 @@ $f: \mathbb{Z}_{2}^{n} \rightarrow \mathbb{Z}_{2}^{n}$, $f$ biyective
 \end{center}
 $f$ should behave as a "Random Oracle": given an input register $x$, the function $f$ should generate $n$ random bits (computing $f(x)$ should be computationally feasible) and, if the same operation is repeated using the same input $x$, the result should be the same.\\
 
-A sponge function or \textbf{sponge construction} is any of a class of algorithms with finite internal state that take an input bit stream of any length and produce an output bit stream of any desired length. A random sponge function is a sponge construction where $f$ is a random permutation, for example,  Keccak cryptographic sponge with a 1600-bit state.\\
+A sponge function or \textbf{sponge construction} is any of a class of algorithms with finite internal state that take an input bit stream of any length and produce an output bit stream of any desired length. A random sponge function is a sponge construction where $f$ is a random permutation, for example,  Keccak cryptographic sponge with a 1600-bit state ($f$ could be any kind of permutation function).\\
 SHA-3 uses the sponge construction, in which data is "absorbed" into the sponge, then the result is "squeezed" out. In the absorbing phase, message blocks are XORed into a subset of the state, which is then transformed as a whole using a permutation function $f$. In the "squeeze" phase, output blocks are read from the same subset of the state, alternated with the state transformation function $f$. The size of the part of the state that is written and read is called the "rate" (denoted $r$), and the size of the part that is untouched by input/output is called the "capacity" (denoted $c$). The capacity determines the security of the scheme. The maximum security level is half the capacity ($\frac{c}{2}$) since it requires a loop of $2^{\frac{c}{2}}$ iterations.
 
 \begin{center}
@@ -148,9 +148,10 @@ Comparison between generic Keccak algorithm and SHA3:\\
 \textit{The permutation $f$ is not required to be one-way. So why hashing with a sponge should be preimage resistant? Assume that r = 512, b = 1600 and that after padding your message $M$ is $x_0$. So the hash digest is $y_0$. Write a loop to find a second preimage of $y_0$. How many
 cycles are expected?}
 
-\textit{\underline{Note:} A public function H from set $A$ to finite set $B$ is: \begin{itemize}
+\textit{\underline{Premise:} A public function H from set $A$ to finite set $B$ is: \begin{itemize}
     \item first-preimage-resistant when for a given random $b$ in $B$, it is hard to exhibit a preimage of $b$, that is, $a$ in $A$ with $H(a)=b$.
-    \item Second-preimage-resistant when for a given random $a_0$ in $A$, it is hard to exhibit another preimage of $b=H(a_0)$, that is, $a$ in $A$ with $a \neq a_0$ and $H(a)=H(a_0)$.
+    \item Second-preimage-resistant when for a given random $a_0$ in $A$, it is hard to exhibit another preimage of $b=H(a_0)$, that is, $a$ in $A$ with $a \neq a_0$ and $H(a)=H(a_0)$ (in other words: Given a \textbf{fixed} input $m_1$ it should be difficult to find another input $m_2$ such that $m_1 \neq m_2$ and hash($m_1$)=hash($m_2$). Functions that lack this property are vulnerable to second-preimage attacks)
+    \item Collision-resistant: like second-preimage-resistant but $m_1$ and $m_2$ can be both freely chosen by the attacker.
 \end{itemize}
 A preimage can in principle be found by trying various values of $a$ in $A$ (other that $a_0$ for second-preimage), and computing $H(a)$ until it matches $b$.}\\
 
@@ -159,21 +160,39 @@ By definition, an ideal hash function is such that the fastest way to compute a 
 "An iterated function, like this Keccak sponge, uses a finite memory to store its state and processes the input, block per block. At any point in time, the state of the iterated function summarizes the input blocks received so far. Because it contains a finite number of bits, collisions can happen in this state. Random oracles, on the other hand, do not have collisions in their state as such a concept does not exist. This is the main reason for which random oracles cannot be used directly to express security claims of functions with variable-length output: they would simply never exhibit any effects of the finite memory any concrete iterated function has.
 Random sponges functions, on the other hand, provide an alternative to the random oracle model for expressing security claims. A random sponge is an instance of the sponge construction with $f$ chosen randomly from the set of transformations (or of permutations) over $b$ bits. We have proven that a random sponge function is as strong as a random oracle, except for the effects induced by the finite memory. A random sponge can serve as a reference model for expressing compact security claims for iterated hash functions and stream ciphers." $\sim$ \textit{Keccak team}\\
 
-Solution: ???
+\underline{Solution:}
+This exercise is about the first step of the sponge \textbf{only}. So, to solve this exercise, it is enough to perform a brute force loop: find another $x_0$ such that the output is again $y_0$ (the $c$ bits of the final register can be dropped out).
+\begin{center}
+\includegraphics[width=80mm]{Exercise7_2_6.png}\\
+\end{center}
+
+
 
 \underline{Exercise 7.2.7}:\\
 \begin{center}
 \includegraphics[width=130mm]{Exercise7_2_7.png}
 \end{center}
 
-....Solution: ???
+1) See point '2)'.\\
+
+2) In order to obtain [001] as digest and assuming that the input message is only 3 bits long (no padding and no division in blocks are needed) it is necessary to have a register such that:\\
+       \begin{center}
+       [01xx0]  $\leftarrow$  [001xx]\\
+       \end{center}
+So, in order to obtain [01xx0], we need to reverse the XOR operation made with the input $x_0$:\\
+       \begin{center}
+       [000 00] $\oplus$ [ttt 00] = [01x 00]   $\rightarrow$   [01xx0]\\
+       \end{center}
+In the end, we have to find the three bits 'ttt', knowing that, XORed with '000' must give the '01x' outcome. There are two possible solutions (the two preimages):\\
+    - [000] $\oplus$ \textcolor{myDarkGreen}{[010]} = [010]\\
+    - [000] $\oplus$ \textcolor{myDarkGreen}{[011]} = [011]\\
 
 \underline{Exercise 7.2.8}:\\
 \begin{center}
 \includegraphics[width=130mm]{Exercise7_2_8.png}
 \end{center}
 
-....Solution: ???
+Solution of this exercise is the same as the previous one, but since the register size is much greater, a coding implementation is needed to perform the operations.\\
 
 \subsection{Bit Commitment}
 
