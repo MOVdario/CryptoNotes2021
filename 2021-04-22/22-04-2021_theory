@@ -32,7 +32,7 @@ $Merkle$-$Damg\ddot{a}rd$ is a method to construct an \textbf{Hash} from a compr
 \begin{center}
 \includegraphics[]{Hash_Merkle-Damgard.png}
 \end{center}
-where each step $i$ is composed of an operation made by the compression function, which receive in input: 
+where each step $i$ is composed of an operation made by the compression function, which receive as input: 
 \begin{itemize}
     \item a digest $H_{i-1}$ on $n$ bits (at first iteration it's the IV)
     \item the input block $x_i$ on $b$ bits ($b > n$)
@@ -58,9 +58,11 @@ By comparing it with Salsa20 and Chacha20, it is possible to notice that last XO
 \underline{Exercise 7.2.4}:\textit{Show that David-Meyer function $Com$ has fixed points. Namely, for any $x_i$ there are $H$ such that: $H = Enc(H) \oplus H$}.\\
 
 Solution:\\
-A notable property of the Davies–Meyer construction is that even if the underlying block cipher is totally secure, it is possible to compute fixed points for the construction: for any $m$, one can find a value of $H$ such that $E_m(H) \oplus H = H$: one just has to set $H = E_m^{-1}(0)$. This is a property that random functions certainly do not have.\\
+A notable property of the Davies–Meyer construction is that even if the underlying block cipher is totally secure, it is possible to compute fixed points for the construction: for any $m$, one can find a value of $H$ such that $E_m(H) \oplus H = H$: one just has to set $H = E_m^{-1}(0)$. This is a property that random functions certainly do not have.
 
-\underline{Exercise 7.2.5}:\\
+\vspace{5cm}
+
+\underline{Exercise 7.2.5}:
 \begin{center}
 \includegraphics[width=130mm]{Exercise7_2_5.png}
 \end{center}
@@ -78,14 +80,15 @@ To obtain a second preimage or a collision, we use the same idea. Let $m=m_1 || 
 \end{center}
 \end{enumerate}
 
-\\
+\vspace{2cm}
 
 \textbf{\underline{An example of $Merkle$-$Damg\ddot{a}rd$ application: RIPEMD-160}}\\ \\
 RIPEMD-160 is a cryptographic hash function based upon the Merkle–Damgård construction. It is used in the Bitcoin standard in order to create a Bitcoin address. It is a a strengthened version of the RIPEMD algorithm which produces a 128 bit hash digest while the RIPEMD-160 algorithm produces a 160-bit output. The compression function is made up of 80 stages made up of 5 blocks that run 16 times each. This pattern runs twice with the results being combined at the bottom using modulo 32 addition.\\
 The compression function is made up of a variable sub-block that the message block is passed though 16 times. There are 5 different variations for a total of 80 runs. This process occurs twice with the data meeting at the bottom to be moved on to the next block (if there is one) or added to the hash register is there isn't. The design of the sub-block and the overall layout of the compression function is shown below.\\ \\
-\textit{RIPEMD-160 sub-block}:\\ \\
-\includegraphics[width=130mm]{RIPEMD160_block.png}\\ \\ 
-
+\textit{RIPEMD-160 sub-block}:
+\begin{center}
+\includegraphics[width=100mm]{RIPEMD160_block.png}
+\end{center}
 Also elliptic curves are used to build a Bitcoin address.
 \begin{flushleft}
 \includegraphics[width=160mm]{Bitcoin_PubKeyToAddr.png}
@@ -112,7 +115,7 @@ $f: \mathbb{Z}_{2}^{n} \rightarrow \mathbb{Z}_{2}^{n}$, $f$ biyective
 $f$ should behave as a "Random Oracle": given an input register $x$, the function $f$ should generate $n$ random bits (computing $f(x)$ should be computationally feasible) and, if the same operation is repeated using the same input $x$, the result should be the same.\\
 
 A sponge function or \textbf{sponge construction} is any of a class of algorithms with finite internal state that take an input bit stream of any length and produce an output bit stream of any desired length. A random sponge function is a sponge construction where $f$ is a random permutation, for example,  Keccak cryptographic sponge with a 1600-bit state ($f$ could be any kind of permutation function).\\
-SHA-3 uses the sponge construction, in which data is "absorbed" into the sponge, then the result is "squeezed" out. In the absorbing phase, message blocks are XORed into a subset of the state, which is then transformed as a whole using a permutation function $f$. In the "squeeze" phase, output blocks are read from the same subset of the state, alternated with the state transformation function $f$. The size of the part of the state that is written and read is called the "rate" (denoted $r$), and the size of the part that is untouched by input/output is called the "capacity" (denoted $c$). The capacity determines the security of the scheme. The maximum security level is half the capacity ($\frac{c}{2}$) since it requires a loop of $2^{\frac{c}{2}}$ iterations.
+SHA-3 uses the sponge construction, in which data is "absorbed" into the sponge, then the result is "squeezed" out. In the absorbing phase, message blocks are XORed into a subset of the state, which is then transformed as a whole using a permutation function $f$. In the "squeeze" phase, output blocks are read from the same subset of the state, alternated with the state transformation function $f$. The size of the part of the state that is written and read is called the "rate" (denoted $r$), and the size of the part that is untouched by input/output is called the "capacity" (denoted $c$). The capacity determines the security of the scheme. The maximum security level is half the capacity ($\frac{c}{2}$) since it requires a loop of $2^{\frac{c}{2}}$ iterations.\\
 
 \begin{center}
 \includegraphics[width=130mm]{sponge_construction.png}
@@ -126,11 +129,13 @@ The two phases are:
 \end{enumerate}
 The last $c$ bits of the state are not altered by the blocks $x_i$ and they are NOT part of the output.\\
 
+In SHA-3 Keccak permutation function $f$, each round consists of a sequence of five steps denoted by Greek letters: $\theta$ (theta), $\rho$ (rho), $\pi$ (pi), $\chi$ (chi) and $\iota$ (iota). Each step manipulates the entire state.\\
+
 Keccak permutation function $f$ is invertible so, if the entire register is output, then the procedure will be reversible: this is why only part of it is taken as output at each squeezing step.
 The capacity determines the claimed level of security, and one can trade claimed security for speed by increasing the capacity $c$ and decreasing the bitrate $r$ accordingly, or viceversa.\\
 
 - Example (SHA3): \\
-$b=1600$, so $r$ could be: 1152, 1088, 832, 576, ...\\
+\indent \indent $b=1600$, so $r$ could be: 1152, 1088, 832, 576, ...\\
 
 Comparison between generic Keccak algorithm and SHA3:\\
 \begin{itemize}
@@ -141,7 +146,7 @@ Comparison between generic Keccak algorithm and SHA3:\\
     \item SHA3:\\
            - $b$ is fixed ($b$=1600).\\
            - Padding is different: M||0110*1\\
-           - In this case there are 24 rounds for $b=1600$ and $l=6$: in fact $12+2 \cdot 6 = 24$.
+           - In this case there are 24 rounds for $b=1600$ and $l=6$: in fact $12+2 \cdot 6 = 24$.\\
 \end{itemize}
 
 \underline{Exercise 7.2.6}:\\
@@ -163,7 +168,7 @@ Random sponges functions, on the other hand, provide an alternative to the rando
 \underline{Solution:}
 This exercise is about the first step of the sponge \textbf{only}. So, to solve this exercise, it is enough to perform a brute force loop: find another $x_0$ such that the output is again $y_0$ (the $c$ bits of the final register can be dropped out).
 \begin{center}
-\includegraphics[width=80mm]{Exercise7_2_6.png}\\
+\includegraphics[width=70mm]{Exercise7_2_6.png}\\
 \end{center}
 
 
@@ -175,7 +180,7 @@ This exercise is about the first step of the sponge \textbf{only}. So, to solve 
 
 1) See point '2)'.\\
 
-2) In order to obtain [001] as digest and assuming that the input message is only 3 bits long (no padding and no division in blocks are needed) it is necessary to have a register such that:\\
+2) In order to obtain [001] as digest and assuming that the input message is only 3 bits long (no padding and no division in blocks are needed) it is necessary to have a register such that the reversed permutation leads to:\\
        \begin{center}
        [01xx0]  $\leftarrow$  [001xx]\\
        \end{center}
@@ -186,8 +191,10 @@ So, in order to obtain [01xx0], we need to reverse the XOR operation made with t
 In the end, we have to find the three bits 'ttt', knowing that, XORed with '000' must give the '01x' outcome. There are two possible solutions (the two preimages):\\
     - [000] $\oplus$ \textcolor{myDarkGreen}{[010]} = [010]\\
     - [000] $\oplus$ \textcolor{myDarkGreen}{[011]} = [011]\\
+    
+\vspace{5cm}
 
-\underline{Exercise 7.2.8}:\\
+\underline{Exercise 7.2.8}:
 \begin{center}
 \includegraphics[width=130mm]{Exercise7_2_8.png}
 \end{center}
@@ -211,7 +218,7 @@ A commitment scheme is secure if these two properties are satisfied:
     \item Binding property: for a given $c$, there is an unique value of $b$ that convince Bob, so Alice (even dishonest) cannot choose another $b$. 
 \end{enumerate}
 
-An application of this scheme is shown in the next exercise:\\
+An application of this scheme is shown in the next exercise:\\ \\
 \underline{Exercise 7.3.1}: Cryptographic coin flipping\\
 \textit{By using a commitment scheme for a single bit ($b \in \{0, 1\}$)
 construct a protocol for the problem of “flipping a coin by telephone”. That is to say, Alice and Bob want to flip a coin by telephone. (They have just divorced, live in different cities, want to decide who gets the car.) Bob would not like to tell Alice HEADS and hear Alice (at the other end of the line) saying “Here goes...I’m flipping the coin... You lost !”
@@ -219,10 +226,10 @@ Hint: start with some naive protocol e.g. Alice chooses a random bit $b_A$ and s
 
 Alice and Bob can use commitments in a procedure that will allow both to trust the outcome:\\
 \begin{itemize}
-    \item Alice "calls" the coin flip but only tells Bob a commitment to her call,
-    \item Bob flips the coin and reports the result,
-    \item Alice reveals what she committed to,
-    \item Bob verifies that Alice's call matches her commitment,
+    \item Alice "calls" the coin flip but only tells Bob a commitment to her call ($c_A = Com(b_A, r_A)$, $c_A$ sent to Bob)
+    \item Bob flips the coin and reports the result  ($c_B = Com(b_B, r_B)$, $c_B$ sent to Alice)
+    \item Alice reveals what she committed to ($b_A$ and $r_A$ are sent to Bob)
+    \item Bob verifies that Alice's call matches her commitment ($c'= Com(b_A, r_A) \rightarrow c' == c_A ?$)
     \item If Alice's revelation matches the coin result Bob reported, Alice wins
 \end{itemize}
 For Bob to be able to skew the results to his favor, he must be able to understand the call hidden in Alice's commitment. If the commitment scheme is a good one, Bob cannot skew the results. Similarly, Alice cannot affect the result if she cannot change the value she commits to.\\
@@ -244,7 +251,9 @@ A MAC consists of three algorithms:
 A MAC is secure if an adversary who does not know $k$, but knows some valid tags
 $(m_1, t_1) \cdots (m_l, t_l)$, it is not able to produce a valid pair $(m, t)$ where $t$ is a valid tag for the message $m$, with of course $m \neq m_i$, $\forall i$.\\
 
-\underline{Exercise 7.4.2}:\\
+\vspace{5cm}
+
+\underline{Exercise 7.4.2}:
 \begin{center}
 \includegraphics[width=130mm]{Exercise7_4_2.png}
 \end{center}
@@ -271,12 +280,12 @@ The attack consists in:
 \end{center}
 
 So the above naive MAC it is not secure if the Hash is designed with the $Merkle$-$Damg\ddot{a}rd$ method. This is a special case of a more general Lenght extension attack.
-This design problem of a Hash is fixed by using HMAC.
+This design problem of a Hash is fixed by using HMAC.\\
 
 \textbf{HMAC}:\\
 A Hash-based Message Authentication Code which does not show the security weakness described above is the HMAC construction, proposed in 1996. The scheme consists of an inner and outer hash.
 \begin{center}
-\includegraphics[width=130mm]{hmac.png}
+\includegraphics[width=110mm]{hmac.png}
 \includegraphics[width=130mm]{hmac2.png}
 \end{center}
 
