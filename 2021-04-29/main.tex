@@ -1,0 +1,68 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage{physics}
+\usepackage{calrsfs}
+\usepackage{mathalpha}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{fixltx2e}
+
+
+\title{Lecture 29-04-2021}
+\author{Filippo Baudanza}
+
+
+\begin{document}
+
+\maketitle
+
+\section{Hellman’s and Rainbow tables}
+\subsection{Introduction}
+\begin{center}
+\includegraphics[scale=0.5]{uno.png}
+\end{center}
+  
+
+The cryptanalyst enciphers some fixed plaintext P0 under each N = |K| keys. This produce a table $(Enc_k(P_0),k)$ which is sorted by $Enc_k(P_0)$ and stored.
+When a user chooses a new key k, he is forced (CPA-attack) to provide $Enc_k(P0)$ to the cryptanalyst. Since the look up table is sorted the cryptanalyst running time to find k is O(log(N )).
+
+\begin{center}
+\includegraphics[scale=1]{tre.png}
+\end{center}
+\subsection{Hellman's tables}
+\begin{center}
+\includegraphics[scale=0.3]{qua.png}
+\end{center}
+  Here are Hellman’s two main ideas:
+First one: In one classic Hellman’s table m keys k1, · · · , km are chosen uniform and random from the key space K. To reduce memory just the first and last column are stored before been sorted by the last column.
+Now assume that someone chooses a key k and the cryptanalyst intercepts Y1 = f(k).
+So he checks if Y1 is in the table. If yes then he knows the key is in the next to the last column of
+a given arrow hence he recover the key with O(t) operations.
+Otherwise he compute Y2 = f(Y1) and checks if it is the last column.
+Notice that to look up a key t search operations are necessary. If all m × t elements are different
+and random the success probability is $ \frac{mt}{N} $.
+Second one: t classical tables are generated using random ”reductions” R. Namely, t random bijections R are chosen and fR := R ◦ f is used as above keeping in mind that once intercepted f(k) we have to check against Y1 = R(f(k)).
+Now we have success probability mt2 . Notice that to look up a key t2 = t × t search operations are N
+necessary.
+
+\subsection{Rainbow tables}
+Rainbow tables effectively solve the problem of collisions with ordinary hash chains by replacing the single reduction function R with a sequence of related reduction functions $R_1$ through $R_k$. In this way, for two chains to collide and merge they must hit the same value on the same iteration: consequently, the final values in these chain will be identical. A final postprocessing pass can sort the chains in the table and remove any "duplicate" chains that have the same final values as other chains. New chains are then generated to fill out the table. These chains are not collision-free (they may overlap briefly) but they will not merge, drastically reducing the overall number of collisions.
+Using sequences of reduction functions changes how lookup is done: because the hash value of interest may be found at any location in the chain, it's necessary to generate k different chains. The first chain assumes the hash value is in the last hash position and just applies $R_k$; the next chain assumes the hash value is in the second-to-last hash position and applies $R_k−1$, then H, then $R_k$; and so on until the last chain, which applies all the reduction functions, alternating with H. This creates a new way of producing a false alarm: if we "guess" the position of the hash value wrong, we may needlessly evaluate a chain.
+Although rainbow tables have to follow more chains, they make up for this by having fewer tables: simple hash chain tables cannot grow beyond a certain size without rapidly becoming inefficient due to merging chains; to deal with this, they maintain multiple tables, and each lookup must search through each table. Rainbow tables can achieve similar performance with tables that are k times larger, allowing them to perform a factor of k fewer lookups.
+\section{Salt}
+One of the earlier applications of cryptographic hash functions was the storage of passwords for user authentication in computer systems. With this method, a password is hashed after its input and is compared to the stored (hashed) reference password. People realized early that it is sufficient to only store the hashed versions of the passwords.
+A salt is a random value appended to the password before hashing.
+\begin{center}
+\includegraphics[scale=0.8]{pen.png}
+\end{center}
+\begin{center}
+\includegraphics[scale=0.5]{ultimo.png}
+\end{center}
+\end{document}
