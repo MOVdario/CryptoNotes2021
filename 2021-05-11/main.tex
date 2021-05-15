@@ -374,8 +374,54 @@
 	If an adversary is able to predict $k_{E}$ DSA is broken. Read the following
 	article: \url{https://www.bbc.com/news/technology-12116051}.
 
+	\paragraph{Exercise 10.3.8}
 
+	Consider a variant of DSA in which just messages in $\mathbb{Z}_{q}$ are signed 
+	and the Hash function is omitted, i.e. to get the signature $(r,s)$ of $m \in
+	\mathbb{Z}_{q}$ we compute $r=\alpha^{k_{E}}$ (as  usual), but
+	$s= (m+d\cdot r)\cdot k^{-1}_{E}(mod ~ q)$.  Is this secure?
 
+	\vspace{20pt}
+
+	A possible attack can be done by setting $k_{E} = d$. The attacker doesn't
+	know the secret key $d$, but now it has to output $s = (m + d \cdot
+	r) d^{-1} (mod ~ q)$. He or she can just choose $m = 0$, so that:
+	$$
+		s = (m + d \cdot r) d^{-1} (mod ~ q) = (d \cdot r) \cdot d^{-1} (mod ~ q) 
+		= r (mod ~ q)
+	$$
+
+	Now $s$ can be computed, because it only depends on known parameters, 
+	and $(r, s)$ with $r = s$ is a valid signature for $m$.
+
+	\subsubsection{Prime generation for DSA}
+
+	The following is a slightly different generator taken from “Understanding
+	Cryptography” by Christof Paar. The goal here is to find two primes $(p, q)$
+	where $2^{1023} < p < 2^{1024}$ and $2^{159} < q < 2^{160}$ and $p-1$ is a
+	multiple of $q$:
+
+	\renewcommand{\labelenumii}{\arabic{enumi}.\arabic{enumii}.}
+
+	\vspace{10pt}
+
+	\textbf{Initialization:} Set i = 1.
+
+	\begin{enumerate}
+		\item Find prime $q$ with $2^{159} < q < 2^{160}$ using the Miller-Rabin
+			algorithm\footnote{Miller-Rabin algorithm is a primality test for
+			numbers.}.
+		\item For i = 1 to 4096:
+			\begin{enumerate}
+				\item Generate a random integer $M$: $2^{1023} < M < 2^{1024}$.
+				\item $M_{r} \equiv M (mod ~ 2q)$
+				\item $p-1 \equiv M - M_{r}$ (note that $p-1$ is a multiple of
+					$2q$)
+				\item if $p$ is prime return$(p, q)$
+				\item i = i+1
+			\end{enumerate}
+		\item Go back to step 1.
+	\end{enumerate}
 
 
 
