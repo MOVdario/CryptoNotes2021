@@ -1,0 +1,145 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{tikz}
+
+\title{Digital signature}
+\author{}
+\date{2021-05-11}
+
+\begin{document}
+
+	\maketitle
+
+	\section{Digital signature}
+
+	A \emph{digital signature} is a piece of information (i.e. a sequence of
+	bits) attached to a message which provides the three following properties:
+	\begin{itemize}
+		\item \textbf{Message authentication} - the receiver of the message can
+			verify the origin of the message
+		\item \textbf{Message integrity} - if the message gets modified the
+			receiver is able to detect it
+		\item \textbf{Non repudiation} - the signer cannot later claim that he
+			or she didn't sign it\footnote{Actually, to gain non-repudiation 
+			we also need a public key certificate, but we won't explore 
+			technical details in this paper, and we'll suppose that the key
+			used to sign is unequivocally linked to the signer.}.
+	\end{itemize}
+
+	\subsection{Digital signature scheme}
+
+	A digital signature scheme consists of the following three probabilistic
+	algorithms:
+
+	\begin{itemize}
+		\item \texttt{Gen(n)} - generate a simmetric key pair \texttt{(pk, sk)}
+			of \texttt{n} bits, where \texttt{n} is a security parameter.
+		\item $\texttt{Sign}_{\texttt{sk}}\texttt{(m)}$ - generate a digital
+			signature $\sigma$ from the \emph{secret key} \texttt{sk} and the
+			\emph{message} \texttt{m}.
+		\item $\texttt{Vrfy}_{\texttt{pk}}\texttt{(m,}\sigma\texttt{)}$ - input
+			\texttt{pk}, \texttt{m} and $\sigma$, output
+			1 if the signature is valid, 0 if the signature is invalid.
+	\end{itemize}
+
+	It's  important to notice that while the key \texttt{pk} is public and
+	available to everyone, the secret key \texttt{sk} must be kept, indeed,
+	secret.
+
+	\subsubsection{Security of the digital signature scheme}
+
+	A digital signature scheme \texttt{(Gen, Sign, Vrfy)} is \emph{secure}
+	if an adversary knowing \texttt{pk} and other valid signatures $(m_{1},
+	\sigma_{1}), (m_{2}, \sigma_{2}), \dots$ is not able to produce a new
+	message $m$ and a valid signature $\sigma$ for it.
+
+	\paragraph{Exercise 10.2.1}
+	
+	What is the difference between a MAC and a digital signature?
+
+	\begin{itemize}
+		\item MAC guarantees only authentication and integrity, while digital
+			signature (in principle) also guarantees non-repudiation.
+		\item A digital signature is created with a key pair \texttt{(pk, sk)},
+			while the MAC is based on a secret key, shared between the sender
+			and the receiver.
+	\end{itemize}
+
+	\subsection{Digital signature protocol}
+
+	Let's consider a sender and a receiver (Alice and Bob).
+
+	Alice wants to send a message $m$ to Bob by using her secret key
+	$\texttt{sk}_{\texttt{A}}$. 
+
+	Bob knows Alice's public key (which is indeed public) and is able to verify
+	the signature.
+	
+	\begin{center}
+		\begin{tikzpicture}[>=stealth]
+			\node at (0, 1) {Alice};	
+			\node at (3, .5) {$(m, \sigma)$};
+			\draw[->,very thick] (1.5, 0) -- (4.5, 0);
+			\node at (6, 1) {Bob};
+			\node at (-.5, 0) {$\sigma = \texttt{Sign}_{sk_{A}}(m)$};
+			\node at (7, 0) {$\text{check} ~ \texttt{Vrfy}_{pk_{A}}(m, \sigma)$};
+		\end{tikzpicture}
+	\end{center}
+
+	\paragraph{Properties:}
+
+	\begin{itemize}
+		\item The signature is \emph{authentic} - Bob knows that Alice signed the
+			message.
+		\item The signature is \emph{unforgeable} - only Alice knows her private
+			key.
+		\item The signature is \emph{not reusable} for any other message -
+			because it's a function of the message.
+		\item Any \emph{alteration} of the message would invalid the signature -
+			it won't be possible to verify the signature with Alice's public key anymore.
+		\item The signature cannot be \emph{repudiated} - Alice cannot claim not
+			having signed the message because she was the only one knowing her
+			private key.
+	\end{itemize}
+
+	\subsection{Digital signature and timestamp}
+
+	Digital signatures should also include timestamps (attach a timestamp to the
+	message and sign the whole document). 
+
+	Let's consider the following \emph{example}, taken from the Bruce Schneier's book
+	“Applied Cryptography”:
+	\begin{quotation}
+		Alice sends Bob a signed digital check for \$100. Bob takes the check to
+		the bank, which verifies the signature and moves the money from one
+		account to another.
+		The following week, Bob takes the same check to the bank, which again
+		verifies the signature and moves the money from one account to another.
+		And so on.
+
+		But if date and time of signature are attached to the message, then the bank
+		could store this timestamp into a database, and when Bob takes the check for
+		the second time, the bank checks the timestamp against its database.
+	\end{quotation}
+
+	\subsection{RSA digital signature}
+
+	\subsubsection{Naive RSA-signature}
+
+	Alice's public key $\texttt{pk}_{A} = (n, e)$ and secret key is
+	$\texttt{sk}_{A} = d$.
+
+	\paragraph{Exercise 10.2.2} 
+
+	Show that the above signature is not secure.
+	Hint: choose any 
+	$\sigma \in \mathbb{Z}_{n}$ and consider $m = \sigma^{e} (mod ~ n)$
+	
+	
+
+
+
+\end{document}
