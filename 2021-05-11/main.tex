@@ -40,7 +40,7 @@
 	algorithms:
 
 	\begin{itemize}
-		\item \texttt{Gen(n)} - generate a simmetric key pair \texttt{(pk, sk)}
+		\item \texttt{Gen(n)} - generate a symmetric key pair \texttt{(pk, sk)}
 			of \texttt{n} bits, where \texttt{n} is a security parameter.
 		\item $\texttt{Sign}_{\texttt{sk}}\texttt{(m)}$ - generate a digital
 			signature $\sigma$ from the \emph{secret key} \texttt{sk} and the
@@ -190,13 +190,43 @@
 	
 	\renewcommand{\labelitemi}{-}
 
-	The following method is parametrized by the choiche of:
+	The following method is parametrized by the choice of:
 	\begin{itemize}
 		\item Hash function 
 		\item Mask generation function
 		\item Salt length
 	\end{itemize}
 
+	\begin{center}
+		\begin{tikzpicture}[>=stealth]
+			\draw (3, 6) rectangle +(2, .5);
+			\node at (4, 6.25) {$m$};
+			\draw[->,very thick] (4, 6) -- +(0, -1);
+			\node at (4, 4.5) {hash};
+			\draw[->,very thick] (4, 4) -- +(0, -1);
+			\node at (0, 2.75) {$M' =$};
+			\draw (1, 2.5) rectangle +(2, .5) node[pos=.5] {padding1};
+			\draw (3, 2.5) rectangle +(2, .5) node[pos=.5] {mHash};
+			\draw (5, 2.5) rectangle +(2, .5) node[pos=.5] {salt};
+			\draw[->,very thick] (4, 2.5) -- +(0, -1);
+			\node at (4, 1) {hash};
+			\draw[->,very thick] (4, .5) -- +(0, -2);
+			\node at (-3, .75) {$DB=$};
+			\draw (-2, .5) rectangle +(2, .5) node[pos=.5] {padding2};
+			\draw (0, .5) rectangle +(2, .5) node[pos=.5] {maskedSeed};
+			\draw[->,very thick] (0, .5) -- +(0, -1);
+			\draw[->,very thick] (4, -.75) -- +(-1.5, 0);
+			\draw (1.5, -1) rectangle +(1, .5) node[pos=.5] {MGF};
+			\draw[->,very thick] (1.5, -.75) -- +(-1.25, 0);
+			\draw (0, -.75) circle (.25);
+			\draw (-.25, -.75) -- +(.5, 0);
+			\draw (0, -.5) -- +(0, -.5);
+			\draw[->,very thick] (0, -.5) -- +(0, -1);
+			\draw (-1.5, -2) rectangle +(3, .5) node[pos=.5] {maskedDB};
+			\draw (1.5, -2) rectangle +(3, .5) node[pos=.5] {maskedSeed};
+			\draw (4.5, -2) rectangle +(1, .5) node[pos=.5] {0xbc};
+		\end{tikzpicture}
+	\end{center}
 
 
 
