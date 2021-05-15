@@ -4,6 +4,11 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{tikz}
+\usepackage{hyperref}
+\hypersetup{
+	colorlinks=true,
+	linkcolor=blue
+}
 
 \title{Digital signature}
 \author{}
@@ -51,7 +56,8 @@
 
 	\subsubsection{Security of the digital signature scheme}
 
-	A digital signature scheme \texttt{(Gen, Sign, Vrfy)} is \emph{secure}
+	A digital signature scheme \texttt{(Gen, Sign, Vrfy)} is
+	\hypertarget{security}{\emph{secure}}
 	if an adversary knowing \texttt{pk} and other valid signatures $(m_{1},
 	\sigma_{1}), (m_{2}, \sigma_{2}), \dots$ is not able to produce a new
 	message $m$ and a valid signature $\sigma$ for it.
@@ -132,13 +138,68 @@
 	Alice's public key $\texttt{pk}_{A} = (n, e)$ and secret key is
 	$\texttt{sk}_{A} = d$.
 
+	\begin{center}
+		\begin{tikzpicture}[>=stealth]
+			\node at (0, 1) {Alice};	
+			\node at (3, 0) {$(m, \sigma)$};
+			\draw[->,very thick] (1.5, -.5) -- (4.5, -.5);
+			\node at (6, 1) {Bob};
+			\node at (0, .5) {$\sigma = \texttt{Sign}_{sk_{A}}(m) = m^{d} (mod
+			~ n)$};
+			\node at (6, -1) {$\texttt{Vrfy}_{pk_{A}}(m, \sigma) = 1 ~ \text{if}
+			~
+			\sigma^{e} = m (mod ~ n)$};
+		\end{tikzpicture}
+	\end{center}
+
 	\paragraph{Exercise 10.2.2} 
 
-	Show that the above signature is not secure.
-	Hint: choose any 
+	Show that the above signature scheme is not secure.
+	\emph{Hint}: choose any 
 	$\sigma \in \mathbb{Z}_{n}$ and consider $m = \sigma^{e} (mod ~ n)$
+
+
+	\vspace{10pt}
+
+	First, let's remember what does it mean for a digital signature scheme
+	to be \hyperlink{security}{secure}: 
+	an adversary should not be able to produce a new message $m$ and a valid
+	signature $\sigma$ for it. 
+
+	Now, let's pick $\sigma \in \mathbb{Z}^{*}_{n}$. We define $m := \sigma^{e}
+	(mod ~ n)$.
+	Then it is true that:
+	$$
+		m = \sigma^{e} (mod ~ n) \quad \Longrightarrow \quad \sigma^{e} = m (mod ~ n)
+	$$
 	
+	But this means that, by definition of our scheme,
+	$\texttt{Vrfy}_{\texttt{pk}_{A}} (m, \sigma) = 1$, and therefore $\sigma$ is
+	a valid signature for $m$.
+
+	Now, some might argue that this isn't a realistic attack because the adversary 
+	has not control over $m$. Actually this is irrelevant to our purposes: plain
+	RSA signature doesn't respect digital signature security requisites.
+
+	\subsection{EMSA-PSS - RSA digital signature}
+
+
+	\emph{Encoding method for signature with appendix probabilistic signature
+	scheme.} 
+	(see also \url{https://tools.ietf.org/rfc/rfc3447.txt}).
 	
+	\renewcommand{\labelitemi}{-}
+
+	The following method is parametrized by the choiche of:
+	\begin{itemize}
+		\item Hash function 
+		\item Mask generation function
+		\item Salt length
+	\end{itemize}
+
+
+
+
 
 
 
