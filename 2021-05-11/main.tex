@@ -188,8 +188,6 @@
 	scheme.} 
 	(see also \url{https://tools.ietf.org/rfc/rfc3447.txt}).
 	
-	\renewcommand{\labelitemi}{-}
-
 	The following method is parametrized by the choice of:
 	\begin{itemize}
 		\item Hash function 
@@ -205,14 +203,14 @@
 			\node at (4, 4.5) {hash};
 			\draw[->,very thick] (4, 4) -- +(0, -1);
 			\node at (0, 2.75) {$M' =$};
-			\draw (1, 2.5) rectangle +(2, .5) node[pos=.5] {padding1};
+			\draw (1, 2.5) rectangle +(2, .5) node[pos=.5] {$padding_{1}$};
 			\draw (3, 2.5) rectangle +(2, .5) node[pos=.5] {mHash};
 			\draw (5, 2.5) rectangle +(2, .5) node[pos=.5] {salt};
 			\draw[->,very thick] (4, 2.5) -- +(0, -1);
 			\node at (4, 1) {hash};
 			\draw[->,very thick] (4, .5) -- +(0, -2);
 			\node at (-3, .75) {$DB=$};
-			\draw (-2, .5) rectangle +(2, .5) node[pos=.5] {padding2};
+			\draw (-2, .5) rectangle +(2, .5) node[pos=.5] {$padding_{2}$};
 			\draw (0, .5) rectangle +(2, .5) node[pos=.5] {maskedSeed};
 			\draw[->,very thick] (0, .5) -- +(0, -1);
 			\draw[->,very thick] (4, -.75) -- +(-1.5, 0);
@@ -221,12 +219,160 @@
 			\draw (0, -.75) circle (.25);
 			\draw (-.25, -.75) -- +(.5, 0);
 			\draw (0, -.5) -- +(0, -.5);
-			\draw[->,very thick] (0, -.5) -- +(0, -1);
+			\draw[->,very thick] (0, -1) -- +(0, -.5);
 			\draw (-1.5, -2) rectangle +(3, .5) node[pos=.5] {maskedDB};
 			\draw (1.5, -2) rectangle +(3, .5) node[pos=.5] {maskedSeed};
 			\draw (4.5, -2) rectangle +(1, .5) node[pos=.5] {0xbc};
+			\node at (-2.3, -1.75) {\emph{EM }=};
 		\end{tikzpicture}
 	\end{center}
+
+	Let's first define fundamental component:
+	\begin{itemize}
+		\item \texttt{emLen} = length of the encoded message (EM) 
+			(at least $8\cdot \texttt{hLen} + 8\cdot \texttt{sLen} + 9$).
+		\item \texttt{hLen} = length of $\texttt{mHash} = \texttt{hash}(m)$.
+		\item \texttt{sLen} = length of \texttt{salt}.
+		\item $padding_{1}$ = \texttt{0x0000000000000000} 
+		\item $padding_{2}$ = \texttt{PS || 0x01} where \texttt{PS} is an octet
+			string consisting of \texttt{emLen - sLen - hLen - 2} zero octets
+			(bytes).
+	\end{itemize}
+
+
+	\paragraph{Encoding:}
+
+	\begin{enumerate}
+		\item If the length of $m$ is greater than the input limitation for the 
+			hash function ($2^{61} - 1$ octets for SHA-1), output "message
+			too long" and stop.
+		\item Let \texttt{mHash = Hash(M)}, an octet string of length \texttt{hLen}.
+		\item If \texttt{emLen} \texttt{< hLen + sLen + 2}, output "encoding error" 
+			and stop.
+		\item Generate a random octet string salt of length \texttt{sLen}; if
+			\texttt{sLen = 0},
+			then \texttt{salt} is the empty string.
+		\item Let
+			\texttt{M'} = \texttt{0x 00 00 00 00 00 00 00 00} || \texttt{mHash} || 
+			\texttt{salt}.
+			\texttt{M'} is an octet string of length \texttt{8 + hLen + sLen} with
+			eight initial zero octets.
+		\item Let \texttt{H = Hash(M')}, an octet string of length \texttt{hLen}.
+		\item Generate an octet string \texttt{PS} consisting of\texttt{emLen - sLen - hLen - 2} 
+			zero octets.  The length of \texttt{PS} may be 0.
+		\item Let \texttt{DB = PS || 0x01 || salt}; \texttt{DB} is an octet string of length
+			\texttt{emLen - hLen - 1}.
+		\item Let \texttt{dbMask = MGF(H, emLen - hLen - 1)}.
+		\item Let \texttt{maskedDB} = \texttt{DB} $\oplus$ \texttt{dbMask}.
+		\item Set the leftmost \texttt{8emLen - emBits} bits of the leftmost octet in
+			\texttt{maskedDB} to zero.
+		\item Let \texttt{EM = maskedDB || H || 0xbc}.
+		\item Output \texttt{EM}.
+	\end{enumerate}
+
+	 Verification operation follows reverse steps to recover \texttt{salt}, then forward 
+	 steps to recompute and compare \texttt{H}. 
+
+	\paragraph{Exercise 10.2.4}
+	Find $padding_{2}$ in the standard.
+
+
+	\subsection{Digital signature algorithm}
+
+	In 1991, The National Institute of Standards and Technology (NIST) proposed
+	the Digital Signature Algorithm (DSA) for use in their Digital Signature
+	Standard (DSS).
+
+
+	We consider a bit length of 1024, though longer bit lenghs are possible in
+	the standard.
+
+	\subsubsection{Key generation}
+
+	\begin{enumerate}
+		\item Generate a prime number $p$ with $2^{1023} < p < 2^{1024}$.
+		\item Find a prime divisor $q$ of $p-1$ with $2^{159} < q < 2^{160}$.
+		\item Find an element $\alpha$ with $ord(\alpha) = q$, i.e. $\alpha$
+			generates the subgroup with $q$ elements\footnote{Remember that a
+			group is a set of elements with a binary operation defined on it,
+			and the properties of closure (i.e. the operation is closed), 
+			associativity, neutral element, inverse element, while the \emph{order} 
+			of an element $\alpha$ of the group is the smallest positive integer $k$
+			such that $\alpha^{k}$ = 1, where $1$ is the neutral element of the
+			group.}
+		\item Choose a random integer $d$ with $0 < d < q$.
+		\item Compute $\beta \equiv \alpha^{d} ( mod ~ p )$
+		\item The keys are $k_{pub} = (p, q, \alpha , \beta)$ and $k_{pri}= d$.
+	\end{enumerate}
+
+	\paragraph{Generating large prime numbers}
+
+	How do we generate a prime number $p$ such that $2^{1023} < p < 2^{1024}$?
+	We can observe that $2^{1023}$ is just $1$ followed by 1023 zeros, i.e.
+	$1000...0$. To pick a random number between $2^{1023} and 2^{1024}$ we can
+	just set to 1 some random zero-bits: the resulting number will be in the
+	given range.
+
+	\subsubsection{Signature}
+
+	\begin{enumerate}
+		\item Choose an integer as random \emph{ephemeral}\footnote{An ephemeral
+			key or \emph{session} key is a key valid only for a limited period
+			of time, usually the time of a connection between two hosts.} key 
+			$k_{E}$ with 0 < $k_{E}$ < $q$.
+		\item Compute $r \equiv (\alpha ^{k_{E}} (mod ~ p)) (mod ~ q)$
+		\item Compute $s \equiv (SHA(x) + d \cdot r) k^{-1}_{E} (mod ~ q)$
+	\end{enumerate}
+
+	Where $x$ is the message to be signed.
+
+	\subsubsection{Verification}
+
+	\begin{enumerate}
+		\item Compute auxiliary value $w \equiv s^{-1} (mod ~ q)$
+		\item Compute auxiliary value $u_{1} \equiv w \cdot SHA(x) (mod ~ q)$
+		\item Compute auxiliary valid $u_{2} \equiv w \cdot r (mod ~ q)$
+		\item Compute $v \equiv (\alpha^{u_{1}} \cdot \beta^{u_{2}} (mod ~ p) )(mod ~ q)$
+		\item The verification $ver_{k_{pub}}(x, (r, s))$ follows from:
+			$$
+			v \begin{cases}
+				\equiv r (mod ~ q) & \Rightarrow \text{valid signature} \\
+				\not\equiv r (mod ~ q) & \Rightarrow \text{invalid signature} \\
+			\end{cases}
+			$$
+	\end{enumerate}
+
+	I.e. the verifier accepts a signature $(r, s)$ only if $v \equiv r (mod  ~
+	q)$ is verified.
+
+	\paragraph{Exercise 10.3.6}
+
+	Set $p = 59, q = 29, \alpha = 3, d = 7, \beta = \alpha^{d} (mod ~ 59)$.
+	Assuming that $SHA(x) = 26$ compute the DSA signature $(r, s)$.
+
+	\vspace{20pt}
+
+	\begin{enumerate}
+		\item We choose $k_{E} = 7$
+		\item We compute $r$ as:
+			$$
+				(\alpha^{k_{E}}(mod ~ p)) (mod ~ q) = 
+				(3^{7} (mod ~ 59)) (mod ~ 29) = 4
+			$$
+		\item We compute $s$ as:
+			$$
+				(SHA(x) + d\cdot r) \cdot k_{E}^{-1} (mod ~ q) = 
+				(26 + 7 \cdot 4) \cdot 7^{-1} (mod ~ 29) = 
+				7
+			$$
+	\end{enumerate}
+
+	So the digital signature is $(r, s) = (4, 7)$.
+
+	\paragraph{Exercise 10.3.7}
+
+	If an adversary is able to predict $k_{E}$ DSA is broken. Read the following
+	article: \url{https://www.bbc.com/news/technology-12116051}.
 
 
 
