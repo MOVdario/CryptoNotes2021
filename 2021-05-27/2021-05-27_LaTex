@@ -1,0 +1,99 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage{physics}
+\usepackage{calrsfs}
+\usepackage{mathalpha}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{fixltx2e}
+\usepackage[dvipsnames]{xcolor}
+
+\definecolor{myDarkGreen}{RGB}{0, 128, 0}
+
+
+\title{2021-05-27 theory}
+\author{}
+\date{May 2021}
+
+\begin{document}
+
+\setcounter{section}{12}
+\setcounter{subsection}{3}
+
+\maketitle
+
+\textbf{Review on the importance of Elliptic Curves:}\\
+They are important since the Discrete Log Problem (find $n$ by knowing $P$ and $G$, where $n$ is like the secret key and $P$ is like the public key) is hard on elliptic curves.
+
+\begin{center}
+$"n" \cdot G = P \longrightarrow $ Hard to compute $n$ from $P$ and $G$.
+\end{center}
+Nowadays, the best algorithms are very slow trying to do this computation but the "hard" assumption is not mathematically proved yet.\\
+Instead, if you know $n$ and $G$, even if $n$ is an huge number, you can compute $n \cdot G$ in a fast way (by means of a variant of the Square \& Multiply algorithm).\\ \\
+\underline{Remainder:} $"n" \cdot G$ means that the generator $G$ is added $n$ times ($G+G+...+G$) where '$+$' is the calculation sign used to add points in EC (Elliptic Curves).\\ \\
+
+\textbf{Review on Digital Signatures:}\\
+A digital signature is a cryptographic primitive acting as a digital counterpart of an handwritten signature.\\
+Properties:
+\begin{itemize}
+    \item Non-repudiation
+    \item Authentication: a signature is an algorithm that needs a public key to perform the verification and so it is necessary also to have a certificate to demonstrate that we are the owner of the public key.
+    \item Integrity
+    \item Unforgeability: if attacker knows some pairs (message, sign) and still cannot build a new valid signature
+\end{itemize}
+An example of use of digital signatures is signing a pdf document by means of the software Acrobat PRO.
+
+\subsection{EdDSA}
+Extract from EdDSA original paper:
+\begin{center}
+\includegraphics[width=450]{EdDSA_original_paper.png}
+\end{center}
+\textit{Notes:}
+\begin{itemize}
+    \item B is going to be the generator (with order $l$) of the elliptic curve.
+    \item The E curve is not in its Weierstrass form above. Its Weierstrass form is $y^2 \eq x^3 + ax + b (mod p)$ and it's equivalent to the one shown in the paper.
+    \item In the Edwards curve, if $d = r^2$, then when this curve is transformed into its Weierstrass form, it will not respect the $\neq 0$ statement. For example: $4 \cdot a^3 + 27 \doct b^2 \neq 0 (mod p)$ would not be respected. So, $d$ should be always different from $r^2$.
+    \item The equation $8SB \eq 8R + 8H(R,A,M)A$ is equivalent in its form without the $8$ constants. This is due to the fact that the order $l$ is prime and so an equation like $8X \eq 8Y$ is equivalent to $X=Y$.
+\end{itemize}
+
+EdDSA signatures are deterministic (if we sign twice the same message/document with the same key, we will obtain the same signature).  This protects against attacks arising from signing with bad randomness; the effects of which can, depending on the algorithm, range up to full private key compromise. 
+
+\subsection{BLS Signature}
+A BLS digital signature — also known as Boneh–Lynn–Shacham (BLS) — is cryptographic signature scheme which allows a user to verify that a signer is authentic.\\
+The scheme uses a bilinear pairing for verification, and signatures are elements of an elliptic curve group. Working in an elliptic curve group provides some defense against index calculus attacks, allowing shorter signatures than FDH (Full Domain Hash) signatures for a similar level of security.\\
+Signatures produced by the BLS signature scheme are often referred to as short signatures, BLS short signatures, or simply BLS signatures. The signature scheme is provably secure (the scheme is existentially unforgeable under adaptive chosen-message attacks).\\
+Short signature scheme is designed for systems where signatures are typed in by a human or signatures are sent over a low-bandwidth channel.\\ \\
+
+A signature scheme consists of three functions: generate, sign, and verify.\\
+\textit{\underline{Key generation:}}\\ The key generation algorithm selects a random integer $x$ such as $0 < x < r$. The private key is $x$. The holder of the private key publishes the public key, $g^x$.\\
+\textit{\underline{Signing:}}\\ Given the private key $x$, and some message $m$, we compute the signature by hashing the bitstring $m$, as $h = H(m)$. We output the signature $\sigma =h^{x}$.
+\textit{\underline{Verification:}}\\ 
+Given a signature $\sigma$  and a public key $g^{x}$, we verify that $e(\sigma ,g)=e(H(m),g^{x})$.
+
+\subsection{EC attacks}
+\subsubsection{Implementation}
+\begin{center}
+\includegraphics[]{12.6.1.png}
+\end{center}
+
+\subsubsection{Mathematical's}
+\textbf{MOV attack}\\
+Most cryptosystems based on elliptic curves can be broken if you can solve the discrete logarithm problem, that is, given the point $P$ and $rP$, find the integer $r$.
+
+The MOV attack uses a bilinear pairing, which (roughly speaking) is a function $e$ that maps two points in an elliptic curve $E(F_q)$ to a element in the finite field $F_{q^k}$, where $k$ is the embedding degree associated with the curve. The bilinearity means that $e(rP,sQ)=e(P,Q)rs$ for points $P,Q$. Therefore, if you want to compute the discrete logarithm of $rP$, you can instead compute $u=e(P,Q)$ and $v=e(rP,Q)$ for any $Q$. Due to bilinearity, we have that $v=e(P,Q)r=ur$. Now you can solve the discrete logarithm in $F_{q^k}$ (given $ur$ and $u$, find $r$) in order to solve the discrete logarithm in the elliptic curve!
+
+Usually, the embedding degree $k$ is very large (the same size as $q$), therefore transfering the discrete logarithm to $F_{q^k}$ won't help you. But for some curves the embedding degree is small enough (specially supersingular curves, where $k \leq 6$), and this enables the MOV attack. For example, a curve with a 256-bit $q$ usually offers 128 bits of security (i.e. can be attacked using 2128 steps); but if it has an embedding degree 2, then we can map the discrete logarithm to the field $F_{q^2}$ which offers only 60 bits of security.
+
+In practice the attack can be simply avoided by not using curves with small embedding degree; standardized curves are safe. Since pairings also have many constructive applications, it is possible to carefully choose curves where the cost of attacking the elliptic curve itself or the mapped finite field is the same.
+
+In the end, for SuperSingular curves the DLP (Discrete Logartihm Problem) is equivalent to DLP on $GF(q^k)$ with $k \leq 6$.
+
+\begin{center}
+\includegraphics[]{note12.6.2.png}
+\end{center}
+
+\end{document}
